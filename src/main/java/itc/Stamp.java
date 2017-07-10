@@ -118,17 +118,17 @@ public class Stamp {
 		} else if (i.isLeaf && i.getValue() == 1) {
 			e.height();
 		} else if (e.isLeaf) {
-		} else if (i.isLeaf == false && i.getLeft().isLeaf && i.getLeft().getValue() == 1) {
+		} else if (!i.isLeaf && i.getLeft().isLeaf && i.getLeft().getValue() == 1) {
 			Stamp.fill(i.getRight(), e.getRight());
 			e.getLeft().height();
 			e.getLeft().setValue(Math.max(e.getLeft().getValue(), e.getRight().getValue()));
 			e.normalize();
-		} else if (i.isLeaf == false && i.getRight().isLeaf && i.getRight().getValue() == 1) {
+		} else if (!i.isLeaf && i.getRight().isLeaf && i.getRight().getValue() == 1) {
 			Stamp.fill(i.getLeft(), e.getLeft());
 			e.getRight().height();
 			e.getRight().setValue(Math.max(e.getRight().getValue(), e.getLeft().getValue()));
 			e.normalize();
-		} else if (i.isLeaf == false) {
+		} else if (!i.isLeaf) {
 			Stamp.fill(i.getLeft(), e.getLeft());
 			Stamp.fill(i.getRight(), e.getRight());
 			e.normalize();
@@ -147,13 +147,13 @@ public class Stamp {
 			e.setAsNode();
 			cost = Stamp.grow(i, e);
 			return cost + 1000;
-		} else if (i.isLeaf == false && i.getLeft().isLeaf && i.getLeft().getValue() == 0) {
+		} else if (!i.isLeaf && i.getLeft().isLeaf && i.getLeft().getValue() == 0) {
 			cost = Stamp.grow(i.getRight(), e.getRight());
 			return cost + 1;
-		} else if (i.isLeaf == false && i.getRight().isLeaf && i.getRight().getValue() == 0) {
+		} else if (!i.isLeaf && i.getRight().isLeaf && i.getRight().getValue() == 0) {
 			cost = Stamp.grow(i.getLeft(), e.getLeft());
 			return cost + 1;
-		} else if (i.isLeaf == false) {
+		} else if (!i.isLeaf) {
 			Event el = e.getLeft().clone();
 			Event er = e.getRight().clone();
 			int costr = Stamp.grow(i.getRight(), e.getRight());
