@@ -420,4 +420,8 @@ public class Event {
 		res.setRight((er == null) ? null : er.clone());
 		return res;
 	}
+
+	public boolean isLeaf() {
+		return isLeaf;
+	}
 }

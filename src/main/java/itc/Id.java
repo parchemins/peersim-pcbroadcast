@@ -322,4 +322,12 @@ public class Id {
 		res.setRight((er == null) ? null : er.clone());
 		return res;
 	}
+
+	public boolean isLeaf() {
+		return this.isLeaf;
+	}
+
+	public boolean isSet() {
+		return this.value == 1;
+	}
 }

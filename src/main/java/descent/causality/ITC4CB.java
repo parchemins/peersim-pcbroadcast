@@ -35,23 +35,55 @@ public class ITC4CB extends Stamp {
 	/**
 	 * Increment the local stamp using the other stamp.
 	 * 
-	 * @param other
+	 * @param o
 	 *            The other stamp used to increment the local vector, it is
 	 *            supposedly ready to be delivered.
 	 */
-	public void incrementFrom(Stamp other) {
+	public void incrementFrom(Stamp o) {
 
 	}
 
 	/**
 	 * Check if the other Stamp has been delivered.
 	 * 
-	 * @param other
+	 * @param o
 	 *            The other stamp to check whether or not it has been delivered.
 	 * @return True if the other stamp has been delivered, false otherwise.
 	 */
-	public boolean delivered(Stamp other) {
-		return true;
+	public boolean delivered(Stamp o) {
+		return ITC4CB._delivered(o.getId(), this.getEvent(), o.getEvent());
+	}
+
+	private static boolean _delivered(Id i, Event e1, Event e2) {
+		// #1 delivered( 0, e1, e2 ) :- true
+		if (i.isLeaf() && !i.isSet())
+			return true;
+		// #2 delivered( 1, e1, e2 ) :- leq( e2, e1 )
+		if (i.isLeaf() && i.isSet())
+			return e2.leq(e1);
+		// #3 delivered( (il, ir), (a, l1, r1), (b, l2, r2) ) :-
+		// delivered(il, l1^a, l2^b) && delivered(ir, r1^a, r2^b)
+		if (!i.isLeaf() && !e1.isLeaf() && !e2.isLeaf())
+			return ITC4CB._delivered(i.getLeft(), Event.lift(e1.getValue(), e1.getLeft()),
+					Event.lift(e2.getValue(), e2.getLeft()))
+					&& ITC4CB._delivered(i.getRight(), Event.lift(e1.getValue(), e1.getRight()),
+							Event.lift(e2.getValue(), e2.getRight()));
+		// #4 delivered( (il, ir), (a, b) ) :- b ≤ a
+		if (!i.isLeaf() && e1.isLeaf() && e2.isLeaf())
+			return e2.getValue() <= e1.getValue();
+		// #5 delivered( (il, ir), a, (b, l2, r2) ) :-
+		// delivered( il, a, l2^b ) && delivered( ir, a, r2^b)
+		if (!i.isLeaf() && e1.isLeaf() && !e2.isLeaf())
+			return ITC4CB._delivered(i.getLeft(), e1, Event.lift(e2.getValue(), e2.getLeft()))
+					&& ITC4CB._delivered(i.getRight(), e1, Event.lift(e2.getValue(), e2.getRight()));
+		// #6 delivered( (il, ir), (a, l1, r1), b ) :-
+		// delivered( il, l1^a, b ) && delivered( ir, r1^a, b )
+		if (!i.isLeaf() && !e1.isLeaf() && e2.isLeaf())
+			return ITC4CB._delivered(i.getLeft(), Event.lift(e1.getValue(), e1.getLeft()), e2)
+					&& ITC4CB._delivered(i.getRight(), Event.lift(e1.getValue(), e1.getRight()), e2);
+		// (TODO) throw an exception
+		System.out.println("_delivered unhandled case");
+		return false;
 	}
 
 	/**
@@ -62,7 +94,7 @@ public class ITC4CB extends Stamp {
 	 * @return True if the other stamp is ready to be delivered, false
 	 *         otherwise.
 	 */
-	public boolean isReady(Stamp other) {
+	public boolean isReady(Stamp o) {
 		return false;
 	}
 
