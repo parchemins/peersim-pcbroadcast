@@ -95,6 +95,44 @@ public class ITC4CB extends Stamp {
 	 *         otherwise.
 	 */
 	public boolean isReady(Stamp o) {
+		return ITC4CB._isReady(o.getId(), this.getEvent(), o.getEvent());
+	}
+
+	private static boolean _isReady(Id i, Event e1, Event e2) {
+		// #1 rdy( 0, e1, e2 ) :- leq(e2, e1)
+		if (i.isLeaf() && !i.isSet())
+			return e2.leq(e1);
+		// #2 rdy( 1, a, b ) :- a = b-1
+		if (i.isLeaf() && i.isSet() && e1.isLeaf() && e2.isLeaf())
+			return e1.getValue() == e2.getValue() - 1;
+		// #3 rdy( 1, (a, l1, r1), b) :- false
+		if (i.isLeaf() && i.isSet() && !e1.isLeaf() && e2.isLeaf())
+			return false;
+		// #4 rdy( 1, a, (b, l2, r2) ) :- false
+		if (i.isLeaf() && i.isSet() && e1.isLeaf() && !e2.isLeaf())
+			return false;
+		// #5 rdy( (il, ir), (a, l1, r1), (b, l2, r2) ) :-
+		// rdy( il, l1^a, l2^b ) && rdy( ir, r1^a, r2^b )
+		if (!i.isLeaf() && !e1.isLeaf() && !e2.isLeaf())
+			return ITC4CB._isReady(i.getLeft(), Event.lift(e1.getValue(), e1.getLeft()),
+					Event.lift(e2.getValue(), e2.getLeft()))
+					&& ITC4CB._isReady(i.getRight(), Event.lift(e1.getValue(), e1.getRight()),
+							Event.lift(e2.getValue(), e2.getRight()));
+		// #6 rdy( (il, ir), a, (b, l2, r2) ) :-
+		// rdy( il, a, l2^b ) && rdy( ir, a, r2^b )
+		if (!i.isLeaf() && e1.isLeaf() && !e2.isLeaf())
+			return ITC4CB._isReady(i.getLeft(), e1, Event.lift(e2.getValue(), e2.getLeft()))
+					&& ITC4CB._isReady(i.getRight(), e1, Event.lift(e2.getValue(), e2.getRight()));
+		// #7 rdy( (il, ir), (a, l1, r1), b ) :-
+		// rdy( il, l1^a, b ) && rdy( ir, r1^a, b)
+		if (!i.isLeaf() && !e1.isLeaf() && e2.isLeaf())
+			return ITC4CB._isReady(i.getLeft(), Event.lift(e1.getValue(), e1.getLeft()), e2)
+					&& ITC4CB._isReady(i.getRight(), Event.lift(e1.getValue(), e1.getRight()), e2);
+		// #8 rdy( (il, ir), a, b ) :- rdy( il, a, b ) && rdy( ir, a, b )
+		if (!i.isLeaf() && e1.isLeaf() && e2.isLeaf())
+			return ITC4CB._isReady(i.getLeft(), e1, e2) && ITC4CB._isReady(i.getRight(), e1, e2);
+		// (TODO) throw an exception
+		System.out.println("_isReady unhandled case");
 		return false;
 	}
 
