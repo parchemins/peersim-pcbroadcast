@@ -74,8 +74,12 @@ public class ITC4CB extends Stamp {
 		// #5 findMin( (il, 0), a) :- ( findMin(il, a), 0 )
 		if (!i.isLeaf() && i.getRight().isLeaf() && !i.getRight().isSet() && e.isLeaf())
 			return (new Id()).setAsNode().setValue(0).setLeft(ITC4CB._findMin(i.getLeft(), e)).setRight(new Id(0));
-		// #6 findMin( (il, 0), (a, l, r) )
-		
+		// #6 findMin( (il, 0), (a, l, r) ) :- ( findMin( il, l^a ), 0 )
+		if (!i.isLeaf() && i.getRight().isLeaf() && !i.getRight().isSet() && !e.isLeaf())
+			return (new Id().setAsNode().setValue(0)
+					.setLeft(ITC4CB._findMin(i.getLeft(), Event.lift(e.getValue(), e.getLeft()))).setRight(new Id(0)));
+		// (TODO) throw an exception
+		System.out.println("_delivered unhandled case");
 		return null;
 	}
 
