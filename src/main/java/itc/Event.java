@@ -341,28 +341,33 @@ public class Event {
 		return this.encode(null).unify();
 	}
 
-	public void setAsLeaf() {
+	public Event setAsLeaf() {
 		this.isLeaf = true;
 		this.left = null;
 		this.right = null;
+		return this;
 	}
 
-	public void setAsNode() {
+	public Event setAsNode() {
 		this.isLeaf = false;
 		this.left = new Event(0);
 		this.right = new Event(0);
+		return this;
 	}
 
-	public void setValue(int val) {
+	public Event setValue(int val) {
 		this.value = val;
+		return this;
 	}
 
-	public void setLeft(Event e) {
+	public Event setLeft(Event e) {
 		this.left = e;
+		return this;
 	}
 
-	public void setRight(Event e) {
+	public Event setRight(Event e) {
 		this.right = e;
+		return this;
 	}
 
 	public int getValue() {

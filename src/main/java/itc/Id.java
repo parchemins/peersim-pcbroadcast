@@ -57,10 +57,8 @@ public class Id {
 			i2.setRight(new Id(1));
 		} else {
 			if (!this.isLeaf && (this.left.isLeaf && this.left.getValue() == 0)
-					&& (!this.right.isLeaf || this.right.getValue() == 1)) { // id
-																				// =
-																				// (0,
-																				// i)
+					&& (!this.right.isLeaf || this.right.getValue() == 1)) {
+				// id = (0, i)
 				Id[] ip = this.right.split();
 
 				i1.setAsNode();
@@ -73,10 +71,8 @@ public class Id {
 				i2.setLeft(new Id(0));
 				i2.setRight(ip[1]);
 			} else if (!this.isLeaf && (!this.left.isLeaf || this.left.getValue() == 1)
-					&& (this.right.isLeaf && this.right.getValue() == 0)) { // id
-																			// =
-																			// (i,
-																			// 0)
+					&& (this.right.isLeaf && this.right.getValue() == 0)) {
+				// id = (i, 0)
 				Id[] ip = this.left.split();
 
 				i1.setAsNode();
@@ -231,29 +227,34 @@ public class Id {
 	}
 
 	// gets, sets e outros
-	public void setAsLeaf() {
+	public Id setAsLeaf() {
 		this.isLeaf = true;
 		this.left = null;
 		this.right = null;
+		return this;
 	}
 
-	public void setAsNode() {
+	public Id setAsNode() {
 		this.isLeaf = false;
 		this.value = -1;
 		this.left = new Id(1);
 		this.right = new Id(0);
+		return this;
 	}
 
-	public void setValue(int v) {
+	public Id setValue(int v) {
 		this.value = v;
+		return this;
 	}
 
-	public void setLeft(Id ni) {
+	public Id setLeft(Id ni) {
 		this.left = ni;
+		return this;
 	}
 
-	public void setRight(Id ni) {
+	public Id setRight(Id ni) {
 		this.right = ni;
+		return this;
 	}
 
 	public int getValue() {

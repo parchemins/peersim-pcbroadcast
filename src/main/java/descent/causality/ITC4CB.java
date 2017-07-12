@@ -28,7 +28,54 @@ public class ITC4CB extends Stamp {
 	 * @return A stamp comprising the event along with the identifier that shows
 	 *         which entry this function increments.
 	 */
-	public Stamp increment() {
+	public ITC4CB increment() {
+		// #1 process the entry to increment
+		Id min = ITC4CB.findMin(this.getId(), this.getEvent());
+		// #2 increment the entry
+		Event e = ITC4CB._increment(min, this.getEvent());
+		// #3 update the local event
+		this.setEvent(e);
+		// #4 return the stamp to send
+		return new ITC4CB(min, e);
+	}
+
+	private static Event _increment(Id i, Event e) {
+		// (TODO)
+		return null;
+	}
+
+	/**
+	 * Get the identifier targeting the minimal value in the event.
+	 * 
+	 * @return An Id containing a single entry to increment.
+	 */
+	private static Id _findMin(Id i, Event e) {
+		// #1 findMin( 1, a ) :- 1
+		if (i.isLeaf() && i.isSet() && e.isLeaf())
+			return new Id(1);
+		// #2 findMin( 1, (a, l, r) ) :-
+		// ( findMin( 1, l ), 0 ) if min(l) < min(r)
+		// ( 0, findMin( 1, r ) ) if min(l) ≥ min(r)
+		if (i.isLeaf() && i.isSet() && !e.isLeaf())
+			if (e.getLeft().getValue() < e.getRight().getValue()) {
+				return (new Id()).setAsNode().setValue(0).setLeft(
+						ITC4CB._findMin(i.getLeft(), Event.lift(e.getValue(), e.getLeft())).setRight(new Id(0)));
+			} else {
+				return (new Id()).setAsNode().setValue(0).setLeft(new Id(0))
+						.setRight(ITC4CB._findMin(i.getRight(), Event.lift(e.getValue(), e.getRight())));
+			}
+		// #3 findMin( (0, ir), a ) :- (0, findMin( ir, a ))
+		if (!i.isLeaf() && i.getLeft().isLeaf() && !i.getLeft().isSet() && e.isLeaf())
+			return (new Id()).setAsNode().setValue(0).setLeft(new Id(0)).setRight(ITC4CB._findMin(i.getRight(), e));
+		// #4 findMin( (0, ir), (a, l, r) ) :- ( 0, findMin(ir, r^a) )
+		if (!i.isLeaf() && i.getLeft().isLeaf() && !i.getLeft().isSet() && !e.isLeaf())
+			return (new Id()).setAsNode().setValue(0).setLeft(new Id(0))
+					.setRight(ITC4CB._findMin(i.getRight(), Event.lift(e.getValue(), e.getRight())));
+		// #5 findMin( (il, 0), a) :- ( findMin(il, a), 0 )
+		if (!i.isLeaf() && i.getRight().isLeaf() && !i.getRight().isSet() && e.isLeaf())
+			return (new Id()).setAsNode().setValue(0).setLeft(ITC4CB._findMin(i.getLeft(), e)).setRight(new Id(0));
+		// #6 findMin( (il, 0), (a, l, r) )
+		
 		return null;
 	}
 
@@ -40,7 +87,7 @@ public class ITC4CB extends Stamp {
 	 *            supposedly ready to be delivered.
 	 */
 	public void incrementFrom(Stamp o) {
-
+		// (TODO)
 	}
 
 	/**
