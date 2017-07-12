@@ -3,7 +3,6 @@ package descent.causality;
 import java.util.ArrayList;
 
 import itc.Id;
-import itc.Stamp;
 
 /**
  * Causality tracker that delivers messages when they are ready, i.e., all its

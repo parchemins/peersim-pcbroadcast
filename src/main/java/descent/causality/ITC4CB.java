@@ -100,8 +100,30 @@ public class ITC4CB extends Stamp {
 	 *            The other stamp used to increment the local vector, it is
 	 *            supposedly ready to be delivered.
 	 */
-	public void incrementFrom(Stamp o) {
-		// (TODO)
+	public void incrementFrom(ITC4CB o) {
+		Event updatedEvent = ITC4CB._incrementFrom(o.getId(), this.getEvent());
+		updatedEvent.normalize();
+		this.setEvent(updatedEvent);
+	}
+
+	private static Event _incrementFrom(Id i, Event e) {
+		// #1 incf( 1, a ) :- a+1
+		if (i.isLeaf() && i.isSet() && e.isLeaf())
+			return new Event(e.getValue() + 1);
+		// #2 incf( 1, (a, l, r) ) :- error (TODO) ?
+		// #3 incf( 0, e ) :- e
+		if (i.isLeaf() && !i.isSet())
+			return e;
+		// #4 incf( (il, ir), a ) :- ( 0, incf(il, a), incf(ir, a) )
+		if (!i.isLeaf() && e.isLeaf())
+			return new Event(0).setAsNode().setLeft(ITC4CB._incrementFrom(i.getLeft(), e))
+					.setRight(ITC4CB._incrementFrom(i.getRight(), e));
+		// #5 incf( (il, ir), (a, l, r) :- ( a, incf(il, l), incf(ir, r) )
+		if (!i.isLeaf() && !e.isLeaf())
+			return new Event(e.getValue()).setAsNode().setLeft(ITC4CB._incrementFrom(i.getLeft(), e.getLeft()))
+					.setRight(ITC4CB._incrementFrom(i.getRight(), e.getRight()));
+		System.out.println("_incrementFrom unhandled case");
+		return null;
 	}
 
 	/**
@@ -111,7 +133,7 @@ public class ITC4CB extends Stamp {
 	 *            The other stamp to check whether or not it has been delivered.
 	 * @return True if the other stamp has been delivered, false otherwise.
 	 */
-	public boolean delivered(Stamp o) {
+	public boolean delivered(ITC4CB o) {
 		return ITC4CB._delivered(o.getId(), this.getEvent(), o.getEvent());
 	}
 
