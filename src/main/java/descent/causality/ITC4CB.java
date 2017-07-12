@@ -30,9 +30,10 @@ public class ITC4CB extends Stamp {
 	 */
 	public ITC4CB increment() {
 		// #1 process the entry to increment
-		Id min = ITC4CB.findMin(this.getId(), this.getEvent());
+		Id min = ITC4CB._findMin(this.getId(), this.getEvent());
 		// #2 increment the entry
 		Event e = ITC4CB._increment(min, this.getEvent());
+		e.normalize();
 		// #3 update the local event
 		this.setEvent(e);
 		// #4 return the stamp to send
@@ -40,7 +41,16 @@ public class ITC4CB extends Stamp {
 	}
 
 	private static Event _increment(Id i, Event e) {
-		// (TODO)
+		// #1 inc( 1, a ) :- a + 1
+		if (i.isLeaf() && i.isSet() && e.isLeaf())
+			return new Event(e.getValue() + 1);
+		if (i.isLeaf() && !i.isSet() && e.isLeaf())
+			return new Event(e.getValue());
+		if (!i.isLeaf() && !e.isLeaf())
+			return new Event(e.getValue()).setAsNode().setLeft(ITC4CB._increment(i.getLeft(), e.getLeft()))
+					.setRight(ITC4CB._increment(i.getRight(), e.getRight()));
+		// (TODO) throw an exception
+		System.out.println("_increment unhandled case");
 		return null;
 	}
 
@@ -79,7 +89,7 @@ public class ITC4CB extends Stamp {
 			return (new Id().setAsNode().setValue(0)
 					.setLeft(ITC4CB._findMin(i.getLeft(), Event.lift(e.getValue(), e.getLeft()))).setRight(new Id(0)));
 		// (TODO) throw an exception
-		System.out.println("_delivered unhandled case");
+		System.out.println("_findMin unhandled case");
 		return null;
 	}
 

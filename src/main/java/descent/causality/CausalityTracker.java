@@ -14,16 +14,16 @@ public class CausalityTracker {
 	/**
 	 * The most up-to-date vector
 	 */
-	public Stamp tracker;
+	public ITC4CB tracker;
 
 	/**
 	 * Buffer of operations that are not yet ready to be delivered.
 	 */
-	public ArrayList<Stamp> buffer;
+	public ArrayList<ITC4CB> buffer;
 
 	public CausalityTracker() {
-		this.tracker = new Stamp();
-		this.buffer = new ArrayList<Stamp>();
+		this.tracker = new ITC4CB();
+		this.buffer = new ArrayList<ITC4CB>();
 	}
 
 	/**
@@ -32,9 +32,9 @@ public class CausalityTracker {
 	 * @param remote
 	 *            The remote peer's stamp.
 	 */
-	public CausalityTracker(Stamp remote) {
-		this.tracker = remote.fork();
-		this.buffer = new ArrayList<Stamp>();
+	public CausalityTracker(ITC4CB remote) {
+		this.tracker = (ITC4CB) remote.fork();
+		this.buffer = new ArrayList<ITC4CB>();
 	}
 
 	/**
@@ -44,8 +44,8 @@ public class CausalityTracker {
 	 *            The remote peer's stamp.
 	 * @return The identifier that has been leased.
 	 */
-	public Id lease(Stamp remote) {
-		Stamp temporary = remote.fork();
+	public Id lease(ITC4CB remote) {
+		ITC4CB temporary = (ITC4CB) remote.fork();
 		this.tracker.setId(temporary.getId());
 		return temporary.getId();
 	}
@@ -58,7 +58,7 @@ public class CausalityTracker {
 	 * @return Whether or not the message has been received for the first time.
 	 * 
 	 */
-	public boolean receive(Stamp message) {
+	public boolean receive(ITC4CB message) {
 		if (this.alreadyExists(message)) {
 			// #1 message has already been received
 			return false;
@@ -79,8 +79,8 @@ public class CausalityTracker {
 	 *            The stamp to check.
 	 * @return Whether or not it already exists.
 	 */
-	private boolean alreadyExists(Stamp stamp) {
-		return stamp.leq(this.tracker) || this.buffer.contains(stamp);
+	private boolean alreadyExists(ITC4CB stamp) {
+		return this.tracker.delivered(stamp) || this.buffer.contains(stamp);
 	}
 
 	/**
@@ -90,15 +90,35 @@ public class CausalityTracker {
 	 *            The stamp to check.
 	 * @return Whether or not it is ready.
 	 */
-	private boolean isReady(Stamp stamp) {
-		// (TODO)
-		return false;
+	private boolean isReady(ITC4CB stamp) {
+		return this.tracker.isReady(stamp);
 	}
 
 	/**
 	 * Check the buffer of message for messages that are ready to be delivered.
 	 */
 	private void checkBuffer() {
-		// (TODO)
+		boolean found = false;
+		int i = this.buffer.size();
+		while (!found && i >= 0) {
+			if (this.isReady(this.buffer.get(i))) {
+				found = true;
+				this.deliver(this.buffer.get(i));
+			}
+			--i;
+		}
+		if (found)
+			checkBuffer();
+	}
+
+	/**
+	 * Deliver the message. It increment the local causality tracking structure
+	 * using the stamp of the message.
+	 * 
+	 * @param stamp
+	 *            The stamp to increment from.
+	 */
+	private void deliver(ITC4CB stamp) {
+		this.tracker.incrementFrom(stamp);
 	}
 }
