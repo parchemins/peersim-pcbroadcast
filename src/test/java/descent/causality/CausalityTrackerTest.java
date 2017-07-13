@@ -93,7 +93,22 @@ public class CausalityTrackerTest extends TestCase {
 
 		assertTrue(ct6.tracker.getEvent().isLeaf());
 		assertEquals(1, ct6.tracker.getEvent().getValue());
-
 	}
 
+	/**
+	 * Check that it should re-emit the message only once.
+	 */
+	@Test
+	public void testForwardOnce() {
+		CausalityTracker ct1 = new CausalityTracker();
+		CausalityTracker ct2 = new CausalityTracker(ct1.tracker);
+
+		ITC4CB s = ct1.stamp();
+
+		boolean shouldIForward = ct2.receive(s);
+		assertTrue(shouldIForward);
+
+		boolean shouldIKeepForwarding = ct2.receive(s);
+		assertFalse(shouldIKeepForwarding);
+	}
 }

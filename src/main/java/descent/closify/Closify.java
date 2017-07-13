@@ -9,6 +9,12 @@ import descent.spray.Spray;
 import descent.spray.SprayPartialView;
 import peersim.core.Node;
 
+/**
+ * Random peer-sampling protocol using Spray to get an approximate of the
+ * network size in order to adjust its number of arcs to reach a network
+ * diameter of 2.
+ *
+ */
 public class Closify extends Spray {
 
 	public ClosifyView additionnalView;

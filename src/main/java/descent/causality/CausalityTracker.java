@@ -51,9 +51,22 @@ public class CausalityTracker {
 
 	/**
 	 * Get a stamp from the causality tracker.
+	 * 
+	 * @return A stamp encoding causal relationships regarding other events.
 	 */
 	public ITC4CB stamp() {
+		// (TODO) throw if this protocol cannot stamp
 		return this.tracker.increment();
+	}
+
+	/**
+	 * Check if whether or not this causality tracking protocol can stamp
+	 * operations.
+	 * 
+	 * @return True if it can stamp, false otherwise
+	 */
+	public boolean canStamp() {
+		return !this.tracker.getId().isLeaf() || this.tracker.getId().isSet();
 	}
 
 	/**
@@ -127,5 +140,13 @@ public class CausalityTracker {
 	 */
 	private void deliver(ITC4CB stamp) {
 		this.tracker.incrementFrom(stamp);
+	}
+
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		CausalityTracker ctClone = new CausalityTracker();
+		ctClone.buffer = (ArrayList<ITC4CB>) this.buffer.clone();
+		ctClone.tracker = (ITC4CB) this.tracker.clone();
+		return ctClone;
 	}
 }

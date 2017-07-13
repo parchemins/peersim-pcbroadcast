@@ -1,10 +1,8 @@
 package descent.controllers;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import descent.observers.PDistance;
 import descent.tman.IDescriptor;
 import descent.tman.TMan;
 import peersim.config.Configuration;
