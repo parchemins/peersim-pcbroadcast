@@ -108,6 +108,7 @@ public class ITC4CB extends Stamp {
 	 *            supposedly ready to be delivered.
 	 */
 	public void incrementFrom(ITC4CB o) {
+		// Could do a this.join( new ITC4B( new Id(0), o.getEvent() ) )
 		Event updatedEvent = ITC4CB._incrementFrom(o.getId(), this.getEvent());
 		updatedEvent.normalize();
 		this.setEvent(updatedEvent);

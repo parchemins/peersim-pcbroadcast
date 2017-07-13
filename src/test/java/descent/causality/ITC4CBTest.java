@@ -1,6 +1,5 @@
 package descent.causality;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import itc.Event;
@@ -121,4 +120,58 @@ public class ITC4CBTest extends TestCase {
 		assertFalse(s.isReady(inc));
 	}
 
+	/**
+	 * 1 entry incremented once. Then fork, then incremented. Check if it is
+	 * ready to be delivered.
+	 */
+	@Test
+	public void testIsReadyMoreComplicated() {
+		Id i = new Id(1);
+		Event e = new Event();
+		ITC4CB s = new ITC4CB(i, e);
+		ITC4CB inc = s.increment();
+
+		ITC4CB s2 = new ITC4CB(s.fork());
+
+		inc = s.increment();
+
+		assertTrue(s2.isReady(inc));
+		assertFalse(s.isReady(inc));
+	}
+
+	/**
+	 * Increment from a 1-entry increment.
+	 */
+	@Test
+	public void testIncrementFrom() {
+		Id i = new Id(1);
+		Event e = new Event();
+		ITC4CB s = new ITC4CB(i, e);
+		ITC4CB s2 = new ITC4CB(s);
+
+		ITC4CB inc = s.increment();
+
+		s2.incrementFrom(inc);
+
+		assertTrue(s2.getEvent().isLeaf());
+		assertEquals(1, s2.getEvent().getValue());
+	}
+
+	/**
+	 * Increment from a 1-entry increment using a join.
+	 */
+	@Test
+	public void testIncrementFromUsingJoin() {
+		Id i = new Id(1);
+		Event e = new Event();
+		ITC4CB s = new ITC4CB(i, e);
+		ITC4CB s2 = new ITC4CB(s);
+
+		ITC4CB inc = s.increment();
+
+		s2.join(new ITC4CB(new Id(0), inc.getEvent()));
+
+		assertTrue(s2.getEvent().isLeaf());
+		assertEquals(1, s2.getEvent().getValue());
+	}
 }
