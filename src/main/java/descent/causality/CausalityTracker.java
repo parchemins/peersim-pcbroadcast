@@ -32,7 +32,7 @@ public class CausalityTracker {
 	 *            The remote peer's stamp.
 	 */
 	public CausalityTracker(ITC4CB remote) {
-		this.tracker = (ITC4CB) remote.fork();
+		this.tracker = new ITC4CB(remote.fork());
 		this.buffer = new ArrayList<ITC4CB>();
 	}
 
@@ -47,6 +47,13 @@ public class CausalityTracker {
 		ITC4CB temporary = (ITC4CB) remote.fork();
 		this.tracker.setId(temporary.getId());
 		return temporary.getId();
+	}
+
+	/**
+	 * Get a stamp from the causality tracker.
+	 */
+	public ITC4CB stamp() {
+		return this.tracker.increment();
 	}
 
 	/**
@@ -98,11 +105,12 @@ public class CausalityTracker {
 	 */
 	private void checkBuffer() {
 		boolean found = false;
-		int i = this.buffer.size();
+		int i = this.buffer.size() - 1;
 		while (!found && i >= 0) {
 			if (this.isReady(this.buffer.get(i))) {
 				found = true;
 				this.deliver(this.buffer.get(i));
+				this.buffer.remove(i);
 			}
 			--i;
 		}

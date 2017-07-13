@@ -33,7 +33,6 @@ public class ITC4CB extends Stamp {
 		Id min = ITC4CB._findMin(this.getId(), this.getEvent());
 		// #2 increment the entry
 		Event e = ITC4CB._increment(min, this.getEvent());
-		e.normalize();
 		// #3 update the local event
 		this.setEvent(e);
 		// #4 return the stamp to send
@@ -45,16 +44,16 @@ public class ITC4CB extends Stamp {
 		if (i.isLeaf() && i.isSet() && e.isLeaf())
 			return new Event(e.getValue() + 1);
 		// #2 inc( 0, a ) :- a
-		if (i.isLeaf() && !i.isSet() && e.isLeaf())
-			return new Event(e.getValue());
+		if (i.isLeaf() && !i.isSet())
+			return e.clone();
 		// #3 inc ( (il, ir), (a, l, r) ) :- ( a, inc(il, l), inc(ir, r) )
 		if (!i.isLeaf() && !e.isLeaf())
 			return new Event(e.getValue()).setAsNode().setLeft(ITC4CB._increment(i.getLeft(), e.getLeft()))
-					.setRight(ITC4CB._increment(i.getRight(), e.getRight()));
+					.setRight(ITC4CB._increment(i.getRight(), e.getRight())).normalize();
 		// #4 inc ( (il, ir), a ) :- ( 0, inc(il, l), inc(ir, r) )
 		if (!i.isLeaf() && e.isLeaf())
 			return new Event(0).setAsNode().setLeft(ITC4CB._increment(i.getLeft(), e))
-					.setRight(ITC4CB._increment(i.getRight(), e));
+					.setRight(ITC4CB._increment(i.getRight(), e)).normalize();
 
 		// (TODO) throw an exception
 		System.out.println("_increment unhandled case");
@@ -110,7 +109,6 @@ public class ITC4CB extends Stamp {
 	public void incrementFrom(ITC4CB o) {
 		// Could do a this.join( new ITC4B( new Id(0), o.getEvent() ) )
 		Event updatedEvent = ITC4CB._incrementFrom(o.getId(), this.getEvent());
-		updatedEvent.normalize();
 		this.setEvent(updatedEvent);
 	}
 
@@ -121,15 +119,15 @@ public class ITC4CB extends Stamp {
 		// #2 incf( 1, (a, l, r) ) :- error (TODO) ?
 		// #3 incf( 0, e ) :- e
 		if (i.isLeaf() && !i.isSet())
-			return e;
+			return e.clone();
 		// #4 incf( (il, ir), a ) :- ( 0, incf(il, a), incf(ir, a) )
 		if (!i.isLeaf() && e.isLeaf())
 			return new Event(0).setAsNode().setLeft(ITC4CB._incrementFrom(i.getLeft(), e))
-					.setRight(ITC4CB._incrementFrom(i.getRight(), e));
+					.setRight(ITC4CB._incrementFrom(i.getRight(), e)).normalize();
 		// #5 incf( (il, ir), (a, l, r) :- ( a, incf(il, l), incf(ir, r) )
 		if (!i.isLeaf() && !e.isLeaf())
 			return new Event(e.getValue()).setAsNode().setLeft(ITC4CB._incrementFrom(i.getLeft(), e.getLeft()))
-					.setRight(ITC4CB._incrementFrom(i.getRight(), e.getRight()));
+					.setRight(ITC4CB._incrementFrom(i.getRight(), e.getRight())).normalize();
 		System.out.println("_incrementFrom unhandled case");
 		return null;
 	}

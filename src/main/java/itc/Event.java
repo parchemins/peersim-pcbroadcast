@@ -75,7 +75,7 @@ public class Event {
 		 */
 	}
 
-	public void normalize() { // transform itself in the normal form
+	public Event normalize() { // transform itself in the normal form
 		if (!this.isLeaf && this.left.isLeaf && this.right.isLeaf && this.left.getValue() == this.right.getValue()) {
 			this.value += this.left.getValue();
 			this.setAsLeaf();
@@ -91,6 +91,7 @@ public class Event {
 		 * norm_ev({N, L, R}) -> M = min(base(L), base(R)), {N + M, drop(M, L),
 		 * drop(M, R)}.
 		 */
+		return this;
 	}
 
 	public void copy(Event e) {

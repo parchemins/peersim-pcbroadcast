@@ -1,5 +1,5 @@
 var times = 100;
-var nbNodes = 10000;
+var nbNodes = 5000;
 //var period = 140;
 var period = 280;
 var step = 1;
