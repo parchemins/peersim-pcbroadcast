@@ -44,11 +44,18 @@ public class ITC4CB extends Stamp {
 		// #1 inc( 1, a ) :- a + 1
 		if (i.isLeaf() && i.isSet() && e.isLeaf())
 			return new Event(e.getValue() + 1);
+		// #2 inc( 0, a ) :- a
 		if (i.isLeaf() && !i.isSet() && e.isLeaf())
 			return new Event(e.getValue());
+		// #3 inc ( (il, ir), (a, l, r) ) :- ( a, inc(il, l), inc(ir, r) )
 		if (!i.isLeaf() && !e.isLeaf())
 			return new Event(e.getValue()).setAsNode().setLeft(ITC4CB._increment(i.getLeft(), e.getLeft()))
 					.setRight(ITC4CB._increment(i.getRight(), e.getRight()));
+		// #4 inc ( (il, ir), a ) :- ( 0, inc(il, l), inc(ir, r) )
+		if (!i.isLeaf() && e.isLeaf())
+			return new Event(0).setAsNode().setLeft(ITC4CB._increment(i.getLeft(), e))
+					.setRight(ITC4CB._increment(i.getRight(), e));
+
 		// (TODO) throw an exception
 		System.out.println("_increment unhandled case");
 		return null;
@@ -68,11 +75,11 @@ public class ITC4CB extends Stamp {
 		// ( 0, findMin( 1, r ) ) if min(l) ≥ min(r)
 		if (i.isLeaf() && i.isSet() && !e.isLeaf())
 			if (e.getLeft().getValue() < e.getRight().getValue()) {
-				return (new Id()).setAsNode().setValue(0).setLeft(
-						ITC4CB._findMin(i.getLeft(), Event.lift(e.getValue(), e.getLeft())).setRight(new Id(0)));
+				return (new Id()).setAsNode().setValue(0)
+						.setLeft(ITC4CB._findMin(i, Event.lift(e.getValue(), e.getLeft())).setRight(new Id(0)));
 			} else {
 				return (new Id()).setAsNode().setValue(0).setLeft(new Id(0))
-						.setRight(ITC4CB._findMin(i.getRight(), Event.lift(e.getValue(), e.getRight())));
+						.setRight(ITC4CB._findMin(i, Event.lift(e.getValue(), e.getRight())));
 			}
 		// #3 findMin( (0, ir), a ) :- (0, findMin( ir, a ))
 		if (!i.isLeaf() && i.getLeft().isLeaf() && !i.getLeft().isSet() && e.isLeaf())
