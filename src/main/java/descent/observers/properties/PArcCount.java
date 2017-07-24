@@ -1,9 +1,12 @@
-package descent.observers;
+package descent.observers.properties;
+
+import descent.observers.structure.DictGraph;
+import descent.observers.structure.IObserverProgram;
 
 /**
  *
  */
-public class PArcCount implements ObserverProgram {
+public class PArcCount implements IObserverProgram {
 
 	final int step = 1000;
 	boolean isFirst = true;

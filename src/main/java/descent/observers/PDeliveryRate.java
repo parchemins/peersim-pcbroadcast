@@ -2,13 +2,15 @@ package descent.observers;
 
 import java.util.function.Function;
 
-import descent.observers.DictGraph.DeliveryRateAndMsg;
+import descent.observers.structure.DictGraph;
+import descent.observers.structure.DictGraph.DeliveryRateAndMsg;
+import descent.observers.structure.IObserverProgram;
 import peersim.core.CommonState;
 
 /**
  *
  */
-public class PDeliveryRate implements ObserverProgram {
+public class PDeliveryRate implements IObserverProgram {
 
 	public Function<Integer, Integer> constantFanout = new Function<Integer, Integer>() {
 		public Integer apply(Integer whatever) {

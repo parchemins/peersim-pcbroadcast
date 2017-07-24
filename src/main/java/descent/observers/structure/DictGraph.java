@@ -1,6 +1,5 @@
-package descent.observers;
+package descent.observers.structure;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

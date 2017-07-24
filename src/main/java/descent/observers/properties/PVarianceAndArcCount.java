@@ -1,9 +1,12 @@
-package descent.observers;
+package descent.observers.properties;
+
+import descent.observers.structure.DictGraph;
+import descent.observers.structure.IObserverProgram;
 
 /**
  * Created by julian on 4/29/15.
  */
-public class PVarianceAndArcCount implements ObserverProgram {
+public class PVarianceAndArcCount implements IObserverProgram {
 
 	int lastSize = -1;
 	int lastCount = 0;

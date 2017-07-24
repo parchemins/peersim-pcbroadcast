@@ -1,4 +1,4 @@
-package descent.observers;
+package descent.observers.structure;
 
 import java.util.ArrayList;
 import java.util.List;

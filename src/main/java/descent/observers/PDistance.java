@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-public class PDistance implements ObserverProgram {
+import descent.observers.structure.DictGraph;
+import descent.observers.structure.IObserverProgram;
+
+public class PDistance implements IObserverProgram {
 
 	public void tick(long currentTick, DictGraph observer) {
 		HashMap<Double, Integer> distribution = observer.getDistances(10);

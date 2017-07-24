@@ -1,6 +1,9 @@
 package descent.observers;
 
-public class PEstimator implements ObserverProgram {
+import descent.observers.structure.DictGraph;
+import descent.observers.structure.IObserverProgram;
+
+public class PEstimator implements IObserverProgram {
 
 	public PEstimator() {
 		System.out.println("#nbPeers stdDeviation avg|P| min|P| max|P|");

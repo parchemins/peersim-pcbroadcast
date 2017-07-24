@@ -1,14 +1,15 @@
 package descent.observers;
 
+import descent.observers.structure.DictGraph;
+import descent.observers.structure.IObserverProgram;
 import peersim.core.CommonState;
-import peersim.core.Network;
 
 /**
  * This Program will print the network as Python-graph
  *
  * Created by julian on 02/05/15.
  */
-public class PPythonNetwork implements ObserverProgram {
+public class PPythonNetwork implements IObserverProgram {
 
 	final int step = 100;
 	boolean isFirst = true;

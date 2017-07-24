@@ -1,9 +1,12 @@
 package descent.observers;
 
+import descent.observers.structure.DictGraph;
+import descent.observers.structure.IObserverProgram;
+
 /**
  *
  */
-public class PMonitorCount implements ObserverProgram {
+public class PMonitorCount implements IObserverProgram {
 
 	/**
 	 *

@@ -1,14 +1,16 @@
-package descent.observers;
+package descent.observers.properties;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import descent.observers.structure.DictGraph;
+import descent.observers.structure.IObserverProgram;
 import peersim.core.CommonState;
 
 /**
  * Created by julian on 11/05/15.
  */
-public class PAvgShortestPath implements ObserverProgram {
+public class PAvgShortestPath implements IObserverProgram {
 
 	int lastSize = 0;
 	int tick = 0;

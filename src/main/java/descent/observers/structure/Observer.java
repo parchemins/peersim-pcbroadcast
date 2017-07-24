@@ -1,4 +1,4 @@
-package descent.observers;
+package descent.observers.structure;
 
 import descent.rps.IDynamic;
 import descent.rps.IPeerSampling;
@@ -17,7 +17,7 @@ public class Observer implements Control {
 	private static final String PROG = "program";
 
 	private int pid;
-	private ObserverProgram program;
+	private IObserverProgram program;
 	private boolean isLast = false;
 
 	public Observer(String name) {
@@ -26,7 +26,7 @@ public class Observer implements Control {
 
 		final Class<?> programClass = Configuration.getClass(name + "." + PROG);
 		try {
-			this.program = (ObserverProgram) programClass.newInstance();
+			this.program = (IObserverProgram) programClass.newInstance();
 		} catch (InstantiationException e) {
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {

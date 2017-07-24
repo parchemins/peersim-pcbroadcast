@@ -1,13 +1,14 @@
-package descent.observers;
+package descent.observers.properties;
 
 import java.util.ArrayList;
 
-import peersim.core.CommonState;
+import descent.observers.structure.DictGraph;
+import descent.observers.structure.IObserverProgram;
 
 /**
  *
  */
-public class PArcAndDiameter implements ObserverProgram {
+public class PArcAndDiameter implements IObserverProgram {
 
 	final int step = 10;
 	boolean isFirst = true;
