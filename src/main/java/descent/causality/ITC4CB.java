@@ -231,7 +231,7 @@ public class ITC4CB extends Stamp {
 	 * @return An id which is the deepest branch of the identifier of the stamp.
 	 */
 	public static Id getDeepest(Id id) {
-		//System.out.println(id + " --> " + ITC4CB._getDeepest(id).id);
+		// System.out.println(id + " --> " + ITC4CB._getDeepest(id).id);
 		return ITC4CB._getDeepest(id).id;
 	}
 
@@ -271,8 +271,8 @@ public class ITC4CB extends Stamp {
 	 *         number of nodes to travel.
 	 */
 	public static Integer distance(Id i1, Id i2) {
-//		System.out.println("i1 " + i1);
-//		System.out.println("i2 " + i2);
+		// System.out.println("i1 " + i1);
+		// System.out.println("i2 " + i2);
 		return ITC4CB._commonRoot(i1, i2);
 	}
 
@@ -304,4 +304,28 @@ public class ITC4CB extends Stamp {
 		return null;
 	}
 
+	/**
+	 * Count the number of nodes of the id.
+	 * 
+	 * @return The number of nodes
+	 */
+	public Integer numberOfNodes() {
+		return ITC4CB._numberOfNodes(this.getId());
+	}
+
+	public static Integer _numberOfNodes(Id i) {
+		// #1 nodes( e ) :- 1
+		if (i.isLeaf() && i.isSet()) {
+			return 1;
+		} else if (i.isLeaf() && !i.isSet()) {
+			return 0;
+		} else { // #2 nodes( (l, r) ) :- 1 + nodes(l) + nodes(r)
+			return 1 + ITC4CB._numberOfNodes(i.getLeft()) + ITC4CB._numberOfNodes(i.getRight());
+		}
+	}
+
+	@Override
+	public ITC4CB clone() {
+		return new ITC4CB(super.clone());
+	}
 }

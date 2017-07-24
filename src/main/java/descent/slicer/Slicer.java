@@ -62,8 +62,7 @@ public class Slicer extends TMan {
 		// #2 see if a swap of rank is needed
 		// (TODO) move this to be more generic, i.e. should not be in slicer
 		if (Slicer.SWAP) {
-			ArrayList<Node> toExamine = new ArrayList<Node>();
-			toExamine.addAll(this.partialViewTMan);
+			ArrayList<Node> toExamine = new ArrayList<Node>(this.partialViewTMan);
 			toExamine.addAll(this.partialView.getPeers());
 
 			// #A farthest frequency
