@@ -231,6 +231,7 @@ public class ITC4CB extends Stamp {
 	 * @return An id which is the deepest branch of the identifier of the stamp.
 	 */
 	public static Id getDeepest(Id id) {
+		//System.out.println(id + " --> " + ITC4CB._getDeepest(id).id);
 		return ITC4CB._getDeepest(id).id;
 	}
 
@@ -250,7 +251,7 @@ public class ITC4CB extends Stamp {
 			if (left.depth > right.depth) {
 				return new IdAndDepth(new Id().setAsNode().setLeft(left.id).setRight(new Id(0)), left.depth + 1);
 			} else {
-				return new IdAndDepth(new Id().setAsNode().setLeft(new Id(0)).setRight(left.id), left.depth + 1);
+				return new IdAndDepth(new Id().setAsNode().setLeft(new Id(0)).setRight(right.id), right.depth + 1);
 			}
 		}
 		// (TODO) throw an exception
@@ -270,21 +271,25 @@ public class ITC4CB extends Stamp {
 	 *         number of nodes to travel.
 	 */
 	public static Integer distance(Id i1, Id i2) {
+//		System.out.println("i1 " + i1);
+//		System.out.println("i2 " + i2);
 		return ITC4CB._commonRoot(i1, i2);
 	}
 
 	private static Integer _commonRoot(Id i1, Id i2) {
 		// #1 cr( (0, r1), (0, r2) ) :- cr(r1, r2)
-		if (i1.getLeft().isLeaf() && !i1.getLeft().isSet() && i2.getLeft().isLeaf() && !i2.getLeft().isSet())
+		if (i1.isNode() && i1.getLeft().isLeaf() && !i1.getLeft().isSet() && i2.isNode() && i2.getLeft().isLeaf()
+				&& !i2.getLeft().isSet())
 			return ITC4CB._commonRoot(i1.getRight(), i2.getRight());
 		// #2 cr( (l1, 0), (l2, 0) ) :- cr(l1, l2)
-		if (i1.getRight().isLeaf() && !i2.getRight().isSet() && i2.getRight().isLeaf() && !i2.getRight().isSet())
+		if (i1.isNode() && i1.getRight().isLeaf() && !i1.getRight().isSet() && i2.isNode() && i2.getRight().isLeaf()
+				&& !i2.getRight().isSet())
 			return ITC4CB._commonRoot(i1.getLeft(), i2.getLeft());
 		// #3 default(i1, i2) :- depth(i1, i2)
 		return ITC4CB._depth(i1) + ITC4CB._depth(i2);
 	}
 
-	private static Integer _depth(Id i) {
+	public static Integer _depth(Id i) {
 		// #1 depth(1) :- 1
 		if (i.isLeaf() && i.isSet())
 			return 1;

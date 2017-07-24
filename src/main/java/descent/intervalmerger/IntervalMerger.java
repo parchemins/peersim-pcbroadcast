@@ -31,13 +31,16 @@ public class IntervalMerger extends TMan {
 
 	@Override
 	public void join(Node joiner, Node contact) {
-		super.join(joiner, contact);
-
 		// #1 on join, get an Id to increment for causality tracking matters
-		IntervalMerger im = (IntervalMerger) contact.getProtocol(IntervalMerger.pid);
-		this.ct.borrow(im.ct.tracker);
+		if (contact != null) {
+			IntervalMerger im = (IntervalMerger) contact.getProtocol(IntervalMerger.pid);
+			this.ct.borrow(im.ct.tracker);
+			((IntervalMergerDescriptor) im.descriptor).setId(im.ct.tracker.getId());
+			// (TODO) lease for a defined duration.
+		}
 		((IntervalMergerDescriptor) this.descriptor).setId(this.ct.tracker.getId());
-		// (TODO) lease for a defined duration.
+
+		super.join(joiner, contact);
 	}
 
 	@Override

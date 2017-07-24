@@ -44,7 +44,7 @@ public class CausalityTracker {
 	 * @return The identifier that has been leased.
 	 */
 	public Id borrow(ITC4CB remote) {
-		ITC4CB temporary = (ITC4CB) remote.fork();
+		ITC4CB temporary = new ITC4CB(remote.fork());
 		this.tracker.setId(temporary.getId());
 		return temporary.getId();
 	}
@@ -146,7 +146,7 @@ public class CausalityTracker {
 	public Object clone() throws CloneNotSupportedException {
 		CausalityTracker ctClone = new CausalityTracker();
 		ctClone.buffer = (ArrayList<ITC4CB>) this.buffer.clone();
-		ctClone.tracker = (ITC4CB) this.tracker.clone();
+		ctClone.tracker = new ITC4CB(this.tracker.clone());
 		return ctClone;
 	}
 }

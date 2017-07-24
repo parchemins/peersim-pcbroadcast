@@ -14,7 +14,9 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
 
+import descent.causality.ITC4CB;
 import descent.controllers.DynamicNetwork;
+import descent.intervalmerger.IntervalMerger;
 import descent.rps.APeerSampling;
 import descent.rps.IPeerSampling;
 import descent.slicer.RankDescriptor;
@@ -1638,7 +1640,6 @@ public class DictGraph {
 		ArrayList<Integer> distribution = this.distributionInSlices();
 
 		// #2 stats on distance
-		Integer sum = 0;
 		Integer number = 0;
 		Integer sumNumberRank = 0;
 		if (!distribution.isEmpty()) {
@@ -1661,4 +1662,18 @@ public class DictGraph {
 		return Stats.getFromSmall(values);
 	}
 
+	/**
+	 * Nodes have a tree as unique identifier, we measure the maximal depth of
+	 * the tree.
+	 * 
+	 * @return A set of stats on the maximal depth of the identifiers.
+	 */
+	public Stats maxDepthOfIdentifiers() {
+		ArrayList<Double> depths = new ArrayList<Double>();
+		for (Node n : DynamicNetwork.networks.get(0)) {
+			IntervalMerger im = (IntervalMerger) n.getProtocol(IntervalMerger.pid);
+			depths.add(ITC4CB._depth(ITC4CB.getDeepest(im.ct.tracker.getId())).doubleValue());
+		}
+		return Stats.getFromSmall(depths);
+	}
 }

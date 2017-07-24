@@ -328,6 +328,10 @@ public class Id {
 		return this.isLeaf;
 	}
 
+	public boolean isNode() {
+		return !this.isLeaf;
+	}
+
 	public boolean isSet() {
 		return this.value == 1;
 	}
