@@ -225,4 +225,59 @@ public class ITC4CB extends Stamp {
 		return false;
 	}
 
+	/**
+	 * Get the deepest branch in the identifier.
+	 * 
+	 * @return An id which is the deepest branch of the identifier of the stamp.
+	 */
+	public static Id getDeepest(Id id) {
+		return ITC4CB._getDeepest(id).id;
+	}
+
+	private static IdAndDepth _getDeepest(Id id) {
+		if (id.isLeaf() && !id.isSet())
+			return new IdAndDepth(new Id(0), 0);
+		if (id.isLeaf() && id.isSet())
+			return new IdAndDepth(new Id(1), 1);
+		if (!id.isLeaf()) {
+			IdAndDepth left = ITC4CB._getDeepest(id.getLeft());
+			IdAndDepth right = ITC4CB._getDeepest(id.getRight());
+			if (left.depth > right.depth) {
+				return new IdAndDepth(new Id().setAsNode().setLeft(left.id).setRight(new Id(0)), left.depth + 1);
+			} else {
+				return new IdAndDepth(new Id().setAsNode().setLeft(new Id(0)).setRight(left.id), left.depth + 1);
+			}
+		}
+		// (TODO) throw an exception
+		System.out.println("_getDeepest unhandled case");
+		return null;
+	}
+
+	/**
+	 * Get the distance between two branches of identifiers. The common root of
+	 * branches counts as 0. The rest counts as 1.
+	 * 
+	 * @param i1
+	 *            the first branch
+	 * @param i2
+	 *            the second branch
+	 * @return An integer which is the distance from a node to the other in
+	 *         number of nodes to travel.
+	 */
+	public static Integer distance(Id i1, Id i2) {
+		return ITC4CB._commonRoot(i1, i2);
+	}
+
+	private static Integer _commonRoot(Id i1, Id i2) {
+		if (i1.getLeft().isLeaf() && !i1.getLeft().isSet() && i2.getLeft().isLeaf() && !i2.getLeft().isSet())
+			return ITC4CB._commonRoot(i1.getRight(), i2.getRight());
+		if (i1.getRight().isLeaf() && !i2.getRight().isSet() && i2.getRight().isLeaf() && !i2.getRight().isSet())
+			return ITC4CB._commonRoot(i1.getLeft(), i2.getLeft());
+		return ITC4CB._depth(i1) + ITC4CB._depth(i2);
+	}
+
+	private static Integer _depth(Id i) {
+		return null;
+	}
+
 }
