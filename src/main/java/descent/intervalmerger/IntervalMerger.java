@@ -4,7 +4,6 @@ import descent.causality.CausalityTracker;
 import descent.merging.MergingRegister;
 import descent.rps.IPeerSampling;
 import descent.spray.SprayPartialView;
-import descent.tman.Descriptor;
 import descent.tman.TMan;
 import descent.tman.TManPartialView;
 import peersim.core.Node;
@@ -12,8 +11,7 @@ import peersim.core.Node;
 /**
  * Overlay network where each peer has an interval tree clock. The overlay
  * network aims to put closer peers with "adjacent" identifiers to reduce the
- * size of the global binary tree. (TODO) (TODO) (TODO) (TODO) (TODO) (TODO)
- * (TODO)
+ * size of the global binary tree.
  */
 public class IntervalMerger extends TMan {
 
@@ -22,11 +20,13 @@ public class IntervalMerger extends TMan {
 	public IntervalMerger(String options) {
 		super(options);
 		this.ct = new CausalityTracker();
+		this.descriptor = new IntervalMergerDescriptor();
 	}
 
 	public IntervalMerger() {
 		super();
 		this.ct = new CausalityTracker();
+		this.descriptor = new IntervalMergerDescriptor();
 	}
 
 	@Override
@@ -35,7 +35,8 @@ public class IntervalMerger extends TMan {
 
 		// #1 on join, get an Id to increment for causality tracking matters
 		IntervalMerger im = (IntervalMerger) contact.getProtocol(IntervalMerger.pid);
-		this.ct.lease(im.ct.tracker);
+		this.ct.borrow(im.ct.tracker);
+		((IntervalMergerDescriptor) this.descriptor).setId(this.ct.tracker.getId());
 		// (TODO) lease for a defined duration.
 	}
 
@@ -46,7 +47,8 @@ public class IntervalMerger extends TMan {
 			imClone.partialView = (SprayPartialView) this.partialView.clone();
 			imClone.register = (MergingRegister) this.register.clone();
 			imClone.partialViewTMan = (TManPartialView) this.partialViewTMan.clone();
-			imClone.descriptor = Descriptor.get();
+			imClone.descriptor = new IntervalMergerDescriptor();
+			((IntervalMergerDescriptor) imClone.descriptor).setId(((IntervalMergerDescriptor) this.descriptor).id);
 			imClone.ct = (CausalityTracker) this.ct.clone();
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();

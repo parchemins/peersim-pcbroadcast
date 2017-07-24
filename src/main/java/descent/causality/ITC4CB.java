@@ -235,10 +235,15 @@ public class ITC4CB extends Stamp {
 	}
 
 	private static IdAndDepth _getDeepest(Id id) {
+		// #1 deepest( 0 ) :- ( 0, 0 )
 		if (id.isLeaf() && !id.isSet())
 			return new IdAndDepth(new Id(0), 0);
+		// #2 deepest( 1 ) :- ( 1, 1 )
 		if (id.isLeaf() && id.isSet())
 			return new IdAndDepth(new Id(1), 1);
+		// #3 deepest( (l, r) ) :- ( (l, 0), dl+1 ) with (l, dl) = deepest(l)
+		// and (r, dr) = deepest(r) if dl>dr;
+		// ((0, r), dr+1) otherwise.
 		if (!id.isLeaf()) {
 			IdAndDepth left = ITC4CB._getDeepest(id.getLeft());
 			IdAndDepth right = ITC4CB._getDeepest(id.getRight());
@@ -269,14 +274,28 @@ public class ITC4CB extends Stamp {
 	}
 
 	private static Integer _commonRoot(Id i1, Id i2) {
+		// #1 cr( (0, r1), (0, r2) ) :- cr(r1, r2)
 		if (i1.getLeft().isLeaf() && !i1.getLeft().isSet() && i2.getLeft().isLeaf() && !i2.getLeft().isSet())
 			return ITC4CB._commonRoot(i1.getRight(), i2.getRight());
+		// #2 cr( (l1, 0), (l2, 0) ) :- cr(l1, l2)
 		if (i1.getRight().isLeaf() && !i2.getRight().isSet() && i2.getRight().isLeaf() && !i2.getRight().isSet())
 			return ITC4CB._commonRoot(i1.getLeft(), i2.getLeft());
+		// #3 default(i1, i2) :- depth(i1, i2)
 		return ITC4CB._depth(i1) + ITC4CB._depth(i2);
 	}
 
 	private static Integer _depth(Id i) {
+		// #1 depth(1) :- 1
+		if (i.isLeaf() && i.isSet())
+			return 1;
+		// #2 depth( (0, r) ) :- 1 + depth(r)
+		if (!i.isLeaf() && i.getLeft().isLeaf() && !i.getLeft().isSet())
+			return 1 + ITC4CB._depth(i.getRight());
+		// #3 depth( (l, 0) ) :- 1 + depth(l)
+		if (!i.isLeaf() && i.getRight().isLeaf() && !i.getRight().isSet())
+			return 1 + ITC4CB._depth(i.getLeft());
+		// (TODO) throw an exception
+		System.out.println("_getDepth unhandled case");
 		return null;
 	}
 

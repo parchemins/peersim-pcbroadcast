@@ -26,9 +26,8 @@ public class IntervalMergerDescriptor implements IDescriptor {
 		// #1 get the deepest branch of the identifiers
 		Id thisDeepestBranch = ITC4CB.getDeepest(this.id);
 		Id otherDeepestBranch = ITC4CB.getDeepest(o.id);
-		// #2 get the distance between branches (TODO)
-		
-		return 0;
+		// #2 get the distance between branches
+		return ITC4CB.distance(thisDeepestBranch, otherDeepestBranch);
 	}
 
 }

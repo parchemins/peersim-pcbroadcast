@@ -43,7 +43,7 @@ public class CausalityTracker {
 	 *            The remote peer's stamp.
 	 * @return The identifier that has been leased.
 	 */
-	public Id lease(ITC4CB remote) {
+	public Id borrow(ITC4CB remote) {
 		ITC4CB temporary = (ITC4CB) remote.fork();
 		this.tracker.setId(temporary.getId());
 		return temporary.getId();
