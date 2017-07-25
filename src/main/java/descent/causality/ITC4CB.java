@@ -226,6 +226,38 @@ public class ITC4CB extends Stamp {
 	}
 
 	/**
+	 * Get the smallest branch in the identifier.
+	 * 
+	 * @return An id which is the smallest branch of the identifier of the
+	 *         stamp.
+	 */
+	public static Id getSmallest(Id id) {
+		// System.out.println(id + " --> " + ITC4CB._getDeepest(id).id);
+		return ITC4CB._getSmallest(id, new IdAndDepth(new Id(0), Integer.MAX_VALUE), 0).id;
+	}
+
+	private static IdAndDepth _getSmallest(Id id, IdAndDepth result, Integer current) {
+		if (current >= result.depth)
+			return result;
+		if (id.isLeaf() && !id.isSet())
+			return new IdAndDepth(new Id(0), Integer.MAX_VALUE);
+		if (id.isLeaf() && id.isSet())
+			return new IdAndDepth(new Id(1), 1);
+		if (!id.isLeaf()) {
+			IdAndDepth left = ITC4CB._getSmallest(id.getLeft(), result, current + 1);
+			IdAndDepth right = ITC4CB._getSmallest(id.getRight(), left, current + 1);
+			if (left.depth > right.depth) {
+				return new IdAndDepth(new Id().setAsNode().setLeft(left.id).setRight(new Id(0)), left.depth + 1);
+			} else {
+				return new IdAndDepth(new Id().setAsNode().setLeft(new Id(0)).setRight(right.id), right.depth + 1);
+			}
+		}
+		// (TODO) throw an exception
+		System.out.println("_getSmallest unhandled case");
+		return null;
+	}
+
+	/**
 	 * Get the deepest branch in the identifier.
 	 * 
 	 * @return An id which is the deepest branch of the identifier of the stamp.
