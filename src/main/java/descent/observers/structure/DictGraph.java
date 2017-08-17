@@ -15,7 +15,7 @@ import java.util.Stack;
 import java.util.function.Function;
 
 import descent.causality.ITC4CB;
-import descent.controllers.DynamicNetwork;
+import descent.controllers.CDynamicNetwork;
 import descent.intervalmerger.IntervalMerger;
 import descent.rps.APeerSampling;
 import descent.rps.IPeerSampling;
@@ -341,11 +341,11 @@ public class DictGraph {
 		Double norm = ((double) m); // directed
 		// Double norm = (double)2*m); // undirected
 		Double sum = 0.0;
-		if (DictGraph.networksDB.size() == 0 && DynamicNetwork.networks.get(0).size() > 0) {
-			for (int i = 0; i < DynamicNetwork.networks.size(); ++i) {
+		if (DictGraph.networksDB.size() == 0 && CDynamicNetwork.networks.get(0).size() > 0) {
+			for (int i = 0; i < CDynamicNetwork.networks.size(); ++i) {
 				HashSet<Long> hs = new HashSet<Long>();
-				for (int j = 0; j < DynamicNetwork.networks.get(i).size(); ++j) {
-					hs.add(DynamicNetwork.networks.get(i).get(j).getID());
+				for (int j = 0; j < CDynamicNetwork.networks.get(i).size(); ++j) {
+					hs.add(CDynamicNetwork.networks.get(i).get(j).getID());
 				}
 				DictGraph.networksDB.add(hs);
 			}
@@ -444,8 +444,8 @@ public class DictGraph {
 	public String countArcsInNetwork(Integer n) {
 		this.explored = new HashSet<Long>();
 		this.toExplore = new Stack<Long>();
-		if (DynamicNetwork.networks.size() > n && DynamicNetwork.networks.get(n).size() > 1) {
-			Node starter = DynamicNetwork.networks.get(n).get(0);
+		if (CDynamicNetwork.networks.size() > n && CDynamicNetwork.networks.get(n).size() > 1) {
+			Node starter = CDynamicNetwork.networks.get(n).get(0);
 			this.toExplore.add(starter.getID());
 			int count = 0;
 			while (this.toExplore.size() > 0) {
@@ -536,10 +536,10 @@ public class DictGraph {
 	public DeliveryRateAndMsg deliveryRate(Function<Integer, Integer> howMany, Integer N) {
 		double sumOfResult = 0;
 		ArrayList<Long> upNode = new ArrayList<Long>();
-		for (Integer i = 0; i < DynamicNetwork.graph.size(); ++i) {
-			APeerSampling rps = (APeerSampling) DynamicNetwork.graph.get(i).getProtocol(APeerSampling.pid);
+		for (Integer i = 0; i < CDynamicNetwork.graph.size(); ++i) {
+			APeerSampling rps = (APeerSampling) CDynamicNetwork.graph.get(i).getProtocol(APeerSampling.pid);
 			if (rps.isUp()) {
-				upNode.add(DynamicNetwork.graph.get(i).getID());
+				upNode.add(CDynamicNetwork.graph.get(i).getID());
 			}
 		}
 
@@ -942,7 +942,7 @@ public class DictGraph {
 			sb.append("import matplotlib.pyplot as plt\n");
 			sb.append("from random import random\n");
 			sb.append(
-					"colors=[(random(),random(),random()) for _i in range(" + DynamicNetwork.networks.size() + ")]\n");
+					"colors=[(random(),random(),random()) for _i in range(" + CDynamicNetwork.networks.size() + ")]\n");
 		}
 
 		final String progName = "exec" + graph;
@@ -1001,7 +1001,7 @@ public class DictGraph {
 			break;
 		case Draw:
 			int i = 0;
-			for (LinkedList<Node> nodes : DynamicNetwork.networks) {
+			for (LinkedList<Node> nodes : CDynamicNetwork.networks) {
 				if (nodes.size() > 0) {
 					sb.append("\tlistNodes" + i + "= [");
 					int j = 0;
@@ -1018,9 +1018,9 @@ public class DictGraph {
 			}
 
 			sb.append("\tpos = nx.spring_layout(" + graph + ")\n");
-			for (i = 0; i < DynamicNetwork.networks.size(); ++i) {
+			for (i = 0; i < CDynamicNetwork.networks.size(); ++i) {
 				sb.append("\tnx.draw(" + graph + ",pos , edge_color='#A9A9A9', nodelist= listNodes"
-						+ (DynamicNetwork.networks.size() - i - 1) + ", node_size=40, node_color=colors[" + i
+						+ (CDynamicNetwork.networks.size() - i - 1) + ", node_size=40, node_color=colors[" + i
 						+ "], with_labels=False)\n");
 			}
 			sb.append("\tplt.savefig('" + graph + "',dpi=225)\n");
@@ -1040,7 +1040,7 @@ public class DictGraph {
 
 		sb.append("import matplotlib.pyplot as plt\n");
 		sb.append("from random import random\n");
-		sb.append("colors=[(random(),random(),random()) for _i in range(" + DynamicNetwork.networks.size() + ")]\n");
+		sb.append("colors=[(random(),random(),random()) for _i in range(" + CDynamicNetwork.networks.size() + ")]\n");
 
 		final String progName = "exec" + graph;
 
@@ -1127,7 +1127,7 @@ public class DictGraph {
 		edgeLabels += "}";
 
 		int i = 0;
-		for (LinkedList<Node> nodes : DynamicNetwork.networks) {
+		for (LinkedList<Node> nodes : CDynamicNetwork.networks) {
 			if (nodes.size() > 0) {
 				sb.append("\tlistNodes" + i + "= [");
 				for (int j = 0; j < distribution.size(); ++j) {
@@ -1143,9 +1143,9 @@ public class DictGraph {
 		}
 
 		sb.append("\tpos = nx.circular_layout(" + graph + ")\n");
-		for (i = 0; i < DynamicNetwork.networks.size(); ++i) {
+		for (i = 0; i < CDynamicNetwork.networks.size(); ++i) {
 			sb.append("\tnx.draw(" + graph + ", pos, edge_color='#A9A9A9', nodelist= listNodes"
-					+ (DynamicNetwork.networks.size() - i - 1) + ", node_size=40, node_color=colors[" + i
+					+ (CDynamicNetwork.networks.size() - i - 1) + ", node_size=40, node_color=colors[" + i
 					+ "], with_labels=True, labels=" + nodeLabels + ", node_sizes=" + nodeSizes + ")\n");
 		}
 
@@ -1487,8 +1487,8 @@ public class DictGraph {
 	 */
 	public Integer countWriters() {
 		HashSet<Long> monitors = new HashSet<Long>();
-		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
-			Node n = DynamicNetwork.networks.get(0).get(i);
+		for (int i = 0; i < CDynamicNetwork.networks.get(0).size(); ++i) {
+			Node n = CDynamicNetwork.networks.get(0).get(i);
 
 			int j = 0;
 			boolean found = false;
@@ -1511,8 +1511,8 @@ public class DictGraph {
 	public ArrayList<Integer> distributionInSlices() {
 		ArrayList<Integer> sums = new ArrayList<Integer>();
 
-		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
-			Node node = DynamicNetwork.networks.get(0).get(i);
+		for (int i = 0; i < CDynamicNetwork.networks.get(0).size(); ++i) {
+			Node node = CDynamicNetwork.networks.get(0).get(i);
 			Slicer slicer = (Slicer) node.getProtocol(Slicer.pid);
 			RankDescriptor descriptor = (RankDescriptor) slicer.descriptor;
 			if (descriptor.isSet()) {
@@ -1536,8 +1536,8 @@ public class DictGraph {
 	public Double findOneAmongAllWriter(Integer N) {
 
 		// JUST A TEST WHERE ONLY ONE PEER IS A WRITER
-		for (int i = 0; i < DynamicNetwork.networks.get(0).size(); ++i) {
-			Node node = DynamicNetwork.networks.get(0).get(i);
+		for (int i = 0; i < CDynamicNetwork.networks.get(0).size(); ++i) {
+			Node node = CDynamicNetwork.networks.get(0).get(i);
 			Slicer slicer = (Slicer) node.getProtocol(Slicer.pid);
 			RankDescriptor descriptor = (RankDescriptor) slicer.descriptor;
 			descriptor.rank = 1;
@@ -1547,15 +1547,15 @@ public class DictGraph {
 		Integer sum = 0;
 		for (int i = 0; i < N; ++i) {
 			// set only one writer (rank = 0)
-			Node node = DynamicNetwork.networks.get(0)
-					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
+			Node node = CDynamicNetwork.networks.get(0)
+					.get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
 			Slicer slicer = (Slicer) node.getProtocol(Spray.pid);
 			RankDescriptor descriptor = (RankDescriptor) slicer.descriptor;
 			descriptor.rank = 0;
 
 			Integer hop = 0;
-			Node current = DynamicNetwork.networks.get(0)
-					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
+			Node current = CDynamicNetwork.networks.get(0)
+					.get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
 			Slicer currentSlicer = (Slicer) current.getProtocol(Slicer.pid);
 			RankDescriptor currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
 
@@ -1592,8 +1592,8 @@ public class DictGraph {
 		for (int i = 0; i < N; ++i) {
 
 			Integer hop = 0;
-			Node current = DynamicNetwork.networks.get(0)
-					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(0).size()));
+			Node current = CDynamicNetwork.networks.get(0)
+					.get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
 			Slicer currentSlicer = (Slicer) current.getProtocol(Slicer.pid);
 			RankDescriptor currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
 			while (!currentDescriptor.rank.equals(0) && hop < N * 10) {
@@ -1630,7 +1630,7 @@ public class DictGraph {
 			}
 		};
 
-		for (Node node : DynamicNetwork.networks.get(0)) {
+		for (Node node : CDynamicNetwork.networks.get(0)) {
 			Slicer slicerNode = (Slicer) node.getProtocol(Slicer.pid);
 			ordered.add(slicerNode);
 		}
@@ -1670,7 +1670,7 @@ public class DictGraph {
 	 */
 	public Stats maxDepthOfIdentifiers() {
 		ArrayList<Double> depths = new ArrayList<Double>();
-		for (Node n : DynamicNetwork.networks.get(0)) {
+		for (Node n : CDynamicNetwork.networks.get(0)) {
 			IntervalMerger im = (IntervalMerger) n.getProtocol(IntervalMerger.pid);
 			depths.add(ITC4CB._depth(ITC4CB.getDeepest(im.ct.tracker.getId())).doubleValue());
 		}

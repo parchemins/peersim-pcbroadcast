@@ -10,6 +10,7 @@ import descent.spray.SprayPartialView;
 import descent.tman.TMan;
 import descent.tman.TManPartialView;
 import itc.Id;
+import itc.Stamp;
 import peersim.core.Node;
 
 /**
@@ -85,15 +86,72 @@ public class IntervalMerger extends TMan {
 		}
 
 		if (nodeReduction != null && reduction > 0) {
-			this.ct.tracker.setId(myIdReduction);
-			((IntervalMergerDescriptor) this.descriptor).setId(this.ct.tracker.getId());
+			this.updateId(myIdReduction);
 			IntervalMerger im = (IntervalMerger) nodeReduction.getProtocol(IntervalMerger.pid);
-			im.ct.tracker.setId(imIdReduction);
-			((IntervalMergerDescriptor) im.descriptor).setId(im.ct.tracker.getId());
+			im.updateId(imIdReduction);
 		}
 
 		super.periodicCall();
 	};
+
+	/**
+	 * Borrow part of the remote's id of itc.
+	 * 
+	 * @param remote
+	 *            The remote peer.
+	 */
+	public void borrow(IntervalMerger remote) {
+		Id.sum(this.ct.tracker.getId(), remote.release());
+		// ugly: double assign since Id.sum is ugly and set this
+		this.updateId(this.ct.tracker.getId());
+	}
+
+	/**
+	 * Get all remote's id.
+	 * 
+	 * @param remote
+	 *            The remote peer.
+	 */
+	public void borrowAll(IntervalMerger remote) {
+		Id.sum(this.ct.tracker.getId(), remote.releaseAll());
+		// ugly: double assign since Id.sum is ugly and set this
+		this.updateId(this.ct.tracker.getId());
+	}
+
+	/**
+	 * Release part of our id of itc
+	 * 
+	 * @return The released part of the id.
+	 */
+	public Id release() {
+		Id[] ids = this.ct.tracker.getId().split();
+		this.updateId(ids[0]);
+		return ids[1];
+	}
+
+	/**
+	 * Release all our id. We should no longer be able to increment the itc.
+	 * 
+	 * @return The released Id.
+	 */
+	public Id releaseAll() {
+		Id result = this.ct.tracker.getId();
+		this.updateId(new Id(0).setAsLeaf());
+		return result;
+	}
+
+	/**
+	 * Update the identifier part of the interval tree clock held by this peer.
+	 * 
+	 * @param i
+	 *            The new identifier.
+	 */
+	public void updateId(Id i) {
+		// #1 update the causal broadcast mechanism
+		this.ct.tracker.setId(i);
+		// #2 update the descriptor
+		((IntervalMergerDescriptor) this.descriptor).setId(this.ct.tracker.getId());
+	}
 
 	@Override
 	public IPeerSampling clone() {

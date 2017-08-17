@@ -13,13 +13,13 @@ import peersim.core.Network;
 /**
  * Collects descriptor from peers and redistributes them
  */
-public class ScrambleDescriptors implements Control {
+public class CScrambleDescriptors implements Control {
 
 	private static final String PAR_DATE = "date";
 	private final int DATE;
 
-	public ScrambleDescriptors(String n) {
-		this.DATE = Configuration.getInt(n + "." + ScrambleDescriptors.PAR_DATE);
+	public CScrambleDescriptors(String n) {
+		this.DATE = Configuration.getInt(n + "." + CScrambleDescriptors.PAR_DATE);
 	}
 
 	public boolean execute() {

@@ -18,7 +18,7 @@ protocol.rps.step 1
 protocol.rps.start 1
 protocol.rps.linkable link
 
-control.o1 descent.controllers.DynamicNetwork
+control.o1 descent.controllers.CDynamicNetwork
 control.o1.protocol rps
 control.o1.FINAL
 control.o1.step 1
@@ -26,6 +26,14 @@ control.o1.addingPerStep 200
 #control.o1.addingPerStepPerc 1
 control.o1.startAdd 0
 control.o1.endAdd 50
+
+control.o2 descent.controllers.CChurnPhase
+control.o2.protocol rps
+control.o2.FINAL
+control.o2.step 1
+control.o2.date 10
+control.o2.n 100
+
 
 ################### initialization ======================
 

@@ -6,7 +6,7 @@ import peersim.core.CommonState;
 import peersim.core.Control;
 import peersim.core.Node;
 
-public class MergeNetworks implements Control {
+public class CMergeNetworks implements Control {
 
 	private static final String PAR_DATE = "date";
 	private static final String PAR_FROM = "from";
@@ -16,19 +16,19 @@ public class MergeNetworks implements Control {
 	private final int FROM;
 	private final int TO;
 
-	public MergeNetworks(String n) {
-		this.DATE = Configuration.getInt(n + "." + MergeNetworks.PAR_DATE, Integer.MAX_VALUE);
-		this.FROM = Configuration.getInt(n + "." + MergeNetworks.PAR_FROM);
-		this.TO = Configuration.getInt(n + "." + MergeNetworks.PAR_TO);
+	public CMergeNetworks(String n) {
+		this.DATE = Configuration.getInt(n + "." + CMergeNetworks.PAR_DATE, Integer.MAX_VALUE);
+		this.FROM = Configuration.getInt(n + "." + CMergeNetworks.PAR_FROM);
+		this.TO = Configuration.getInt(n + "." + CMergeNetworks.PAR_TO);
 	}
 
 	public boolean execute() {
 		if (CommonState.getTime() == this.DATE) {
 			// #1 choose a peer from each network
-			final Node initiator = DynamicNetwork.networks.get(this.FROM)
-					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(this.FROM).size()));
-			final Node contact = DynamicNetwork.networks.get(this.TO)
-					.get(CommonState.r.nextInt(DynamicNetwork.networks.get(this.TO).size()));
+			final Node initiator = CDynamicNetwork.networks.get(this.FROM)
+					.get(CommonState.r.nextInt(CDynamicNetwork.networks.get(this.FROM).size()));
+			final Node contact = CDynamicNetwork.networks.get(this.TO)
+					.get(CommonState.r.nextInt(CDynamicNetwork.networks.get(this.TO).size()));
 			// #2 initiate the merge
 			this.merge(initiator, contact);
 		}
