@@ -1676,4 +1676,19 @@ public class DictGraph {
 		}
 		return Stats.getFromSmall(depths);
 	}
+
+	/**
+	 * Nodes still have a tree as unique identifier, we measure the size of the
+	 * encoded identifiers.
+	 * 
+	 * @return A set of stats about the encoded size of ids
+	 */
+	public Stats sizeOfIdentifier() {
+		ArrayList<Double> sizes = new ArrayList<Double>();
+		for (Node n : CDynamicNetwork.networks.get(0)) {
+			IntervalMerger im = (IntervalMerger) n.getProtocol(IntervalMerger.pid);
+			sizes.add((double) im.ct.tracker.getId().encode(null).getSizeBits());
+		}
+		return Stats.getFromSmall(sizes);
+	}
 }

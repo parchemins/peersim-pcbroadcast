@@ -127,7 +127,7 @@ public class Id {
 		}
 	}
 
-	public void normalize() {
+	public Id normalize() {
 		if (!this.isLeaf && this.left.isLeaf && this.left.getValue() == 0 && this.right.isLeaf
 				&& this.right.getValue() == 0) {
 			this.setAsLeaf();
@@ -139,6 +139,7 @@ public class Id {
 			this.value = 1;
 			this.left = this.right = null;
 		} // else do nothing
+		return this;
 	}
 
 	public void copy(Id i) {

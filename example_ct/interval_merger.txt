@@ -32,7 +32,7 @@ control.o2.protocol rps
 control.o2.FINAL
 control.o2.step 1
 control.o2.date 10
-control.o2.n 100
+control.o2.n 10000
 
 
 ################### initialization ======================

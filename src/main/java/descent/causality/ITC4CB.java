@@ -356,6 +356,30 @@ public class ITC4CB extends Stamp {
 		}
 	}
 
+	/**
+	 * Remove the branch from the Id.
+	 * 
+	 * @param branch
+	 *            The branch to remove.
+	 */
+	public void removeBranch(Id branch) {
+		this.setId(ITC4CB._removeBranch(this.getId(), branch));
+	}
+
+	private static Id _removeBranch(Id i, Id b) {
+		if (i.isLeaf() && i.isSet() && b.isLeaf() && b.isSet()) {
+			return new Id(0).setAsLeaf();
+		} else if (i.isNode() && b.isNode() && b.getLeft().isLeaf() && !b.getLeft().isSet()) {
+			return new Id().setAsNode().setLeft(i.getLeft()).setRight(ITC4CB._removeBranch(i.getRight(), b.getRight()))
+					.normalize();
+		} else if (i.isNode() && b.isNode() && b.getRight().isLeaf() && !b.getRight().isSet()) {
+			return new Id().setAsNode().setLeft(ITC4CB._removeBranch(i.getLeft(), b.getLeft()).setRight(i.getRight()));
+		}
+		// (TODO) throw an exception
+		System.out.println("_removeBranch unhandled case");
+		return null;
+	}
+
 	@Override
 	public ITC4CB clone() {
 		return new ITC4CB(super.clone());

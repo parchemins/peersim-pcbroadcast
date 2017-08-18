@@ -51,7 +51,7 @@ public class IntervalMerger extends TMan {
 	public void periodicCall() {
 		// #1 check if should swap and stuff
 		ArrayList<Node> toExamine = new ArrayList<Node>(this.partialViewTMan);
-		toExamine.addAll(this.partialView.getPeers());
+		//toExamine.addAll(this.partialView.getPeers());
 
 		Integer reduction = Integer.MIN_VALUE;
 		Node nodeReduction = null;
@@ -66,6 +66,7 @@ public class IntervalMerger extends TMan {
 			ITC4CB myCurrentStamp = this.ct.tracker.clone();
 			ITC4CB imCurrentStamp = im.ct.tracker.clone();
 			// #C fork remote id
+			// (TODO) get the deepest branch
 			Id newId = im.ct.tracker.fork().getId();
 			// #D merge with ours and set our new id
 			im.ct.tracker.join(this.ct.tracker);
