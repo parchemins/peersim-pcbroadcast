@@ -281,9 +281,11 @@ public class ITC4CB extends Stamp {
 			IdAndDepth left = ITC4CB._getDeepest(id.getLeft());
 			IdAndDepth right = ITC4CB._getDeepest(id.getRight());
 			if (left.depth > right.depth) {
-				return new IdAndDepth(new Id().setAsNode().setLeft(left.id).setRight(new Id(0)), left.depth + 1);
+				return new IdAndDepth(new Id().setAsNode().setLeft(left.id).setRight(new Id(0)),
+						left.depth + 1);
 			} else {
-				return new IdAndDepth(new Id().setAsNode().setLeft(new Id(0)).setRight(right.id), right.depth + 1);
+				return new IdAndDepth(new Id().setAsNode().setLeft(new Id(0)).setRight(right.id),
+						right.depth + 1);
 			}
 		}
 		// (TODO) throw an exception
@@ -347,13 +349,12 @@ public class ITC4CB extends Stamp {
 
 	public static Integer _numberOfNodes(Id i) {
 		// #1 nodes( e ) :- 1
-		if (i.isLeaf() && i.isSet()) {
+		if (i.isLeaf() && i.isSet())
 			return 1;
-		} else if (i.isLeaf() && !i.isSet()) {
+		if (i.isLeaf() && !i.isSet())
 			return 0;
-		} else { // #2 nodes( (l, r) ) :- 1 + nodes(l) + nodes(r)
-			return 1 + ITC4CB._numberOfNodes(i.getLeft()) + ITC4CB._numberOfNodes(i.getRight());
-		}
+		// #2 nodes( (l, r) ) :- 1 + nodes(l) + nodes(r)
+		return 1 + ITC4CB._numberOfNodes(i.getLeft()) + ITC4CB._numberOfNodes(i.getRight());
 	}
 
 	/**
@@ -367,14 +368,17 @@ public class ITC4CB extends Stamp {
 	}
 
 	private static Id _removeBranch(Id i, Id b) {
-		if (i.isLeaf() && i.isSet() && b.isLeaf() && b.isSet()) {
+		// #1 rb( 1, 1 ) :- 0
+		if (i.isLeaf() && i.isSet() && b.isLeaf() && b.isSet())
 			return new Id(0).setAsLeaf();
-		} else if (i.isNode() && b.isNode() && b.getLeft().isLeaf() && !b.getLeft().isSet()) {
-			return new Id().setAsNode().setLeft(i.getLeft()).setRight(ITC4CB._removeBranch(i.getRight(), b.getRight()))
-					.normalize();
-		} else if (i.isNode() && b.isNode() && b.getRight().isLeaf() && !b.getRight().isSet()) {
-			return new Id().setAsNode().setLeft(ITC4CB._removeBranch(i.getLeft(), b.getLeft()).setRight(i.getRight()));
-		}
+		// #2 rb( (l1, r1), (0, r2) ) :- norm( l1, rb(r1, r2) )
+		if (i.isNode() && b.isNode() && b.getLeft().isLeaf() && !b.getLeft().isSet())
+			return new Id(0).setAsNode().setLeft(i.getLeft())
+					.setRight(ITC4CB._removeBranch(i.getRight(), b.getRight())).normalize();
+		// #3 rb( (l1, r1), (l2, 0) ) :- norm( rb(l1, l2), r2 )
+		if (i.isNode() && b.isNode() && b.getRight().isLeaf() && !b.getRight().isSet())
+			return new Id(0).setAsNode().setLeft(ITC4CB._removeBranch(i.getLeft(), b.getLeft()))
+					.setRight(i.getRight()).normalize();
 		// (TODO) throw an exception
 		System.out.println("_removeBranch unhandled case");
 		return null;

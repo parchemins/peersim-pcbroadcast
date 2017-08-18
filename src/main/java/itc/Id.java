@@ -128,16 +128,10 @@ public class Id {
 	}
 
 	public Id normalize() {
-		if (!this.isLeaf && this.left.isLeaf && this.left.getValue() == 0 && this.right.isLeaf
-				&& this.right.getValue() == 0) {
-			this.setAsLeaf();
-			this.value = 0;
-			this.left = this.right = null;
-		} else if (!this.isLeaf && this.left.isLeaf && this.left.getValue() == 1 && this.right.isLeaf
-				&& this.right.getValue() == 1) {
-			this.setAsLeaf();
-			this.value = 1;
-			this.left = this.right = null;
+		if (!this.isLeaf && this.left.isLeaf && !this.left.isSet() && this.right.isLeaf && !this.right.isSet()) {
+			this.setAsLeaf().setValue(0).setLeft(null).setRight(null);
+		} else if (!this.isLeaf && this.left.isLeaf && this.left.isSet() && this.right.isLeaf && this.right.isSet()) {
+			this.setAsLeaf().setValue(1).setLeft(null).setRight(null);
 		} // else do nothing
 		return this;
 	}
