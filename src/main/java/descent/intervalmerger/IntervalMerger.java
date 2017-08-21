@@ -50,43 +50,58 @@ public class IntervalMerger extends TMan {
 	public void periodicCall() {
 		// #1 check if should swap and stuff
 		ArrayList<Node> toExamine = new ArrayList<Node>(this.partialViewTMan);
-		// toExamine.addAll(this.partialView.getPeers());
+		toExamine.addAll(this.partialView.getPeers());
 
 		Integer reduction = Integer.MIN_VALUE;
 		Node nodeReduction = null;
 		Id myIdReduction = null;
 		Id imIdReduction = null;
 
+		// process the best split. //(TODO)
+		for (Node node : toExamine) {
+			IntervalMerger im = (IntervalMerger) node.getProtocol(IntervalMerger.pid);
+		}
+
 		for (Node node : toExamine) {
 			IntervalMerger im = (IntervalMerger) node.getProtocol(IntervalMerger.pid);
 			// #A before
-			// Integer sumOfNodes = this.ct.tracker.numberOfNodes() + im.ct.tracker.numberOfNodes();
-			Integer sumOfNodes = this.ct.tracker.getId().encode(null).getSizeBits() + im.ct.tracker.getId().encode(null).getSizeBits();
-			
+			// Integer sumOfNodes = this.ct.tracker.numberOfNodes() +
+			// im.ct.tracker.numberOfNodes();
+			Integer sumOfNodes = this.ct.tracker.getId().encode(null).getSizeBits()
+					+ im.ct.tracker.getId().encode(null).getSizeBits();
+
 			// #B save current config
 			ITC4CB myCurrentStamp = this.ct.tracker.clone();
 			ITC4CB imCurrentStamp = im.ct.tracker.clone();
 			// #C fork remote id
 			// #D merge with ours and set our new id
+
+			Id toRemove = ITC4CB.getClosestBranch(this.ct.tracker.getId(), im.ct.tracker.getId()).id;
+			// Id toRemove = ITC4CB.getDeepest(this.ct.tracker.getId());
+
 			// System.out.println("BEFORE");
 			// System.out.println(this.ct.tracker.getId());
-			Id toRemove = ITC4CB.getDeepest(this.ct.tracker.getId());
 			// System.out.println("TOREMOVE");
 			// System.out.println(toRemove);
+
 			this.ct.tracker.removeBranch(toRemove);
 			// System.out.println("AFTER");
 			// System.out.println(this.ct.tracker.getId());
 			ITC4CB toMerge = new ITC4CB();
 			toMerge.setId(toRemove);
+			//toMerge.setId(this.ct.tracker.getId());
+			//this.ct.tracker.setId(new Id(0));
 			im.ct.tracker.join(toMerge);
 			if (this.ct.tracker.getId().isLeaf() && !this.ct.tracker.getId().isSet()) {
 				Id newId = im.ct.tracker.fork().getId();
 				this.ct.tracker.setId(newId);
 			}
 			// #E after
-			//Integer newSumOfNodes = this.ct.tracker.numberOfNodes() + im.ct.tracker.numberOfNodes();
-			Integer newSumOfNodes =  this.ct.tracker.getId().encode(null).getSizeBits() + im.ct.tracker.getId().encode(null).getSizeBits();
-			
+			// Integer newSumOfNodes = this.ct.tracker.numberOfNodes() +
+			// im.ct.tracker.numberOfNodes();
+			Integer newSumOfNodes = this.ct.tracker.getId().encode(null).getSizeBits()
+					+ im.ct.tracker.getId().encode(null).getSizeBits();
+
 			if (reduction < sumOfNodes - newSumOfNodes) {
 				nodeReduction = node;
 				reduction = sumOfNodes - newSumOfNodes;

@@ -1,5 +1,7 @@
 package descent.intervalmerger;
 
+import java.util.List;
+
 import descent.causality.ITC4CB;
 import descent.tman.IDescriptor;
 import itc.Id;
@@ -22,6 +24,11 @@ public class IntervalMergerDescriptor implements IDescriptor {
 	}
 
 	public double ranking(IDescriptor other) {
+		IntervalMergerDescriptor o = (IntervalMergerDescriptor) other;
+		return ITC4CB.getClosestBranch(this.id, o.id).depth;
+	}
+
+	public double ranking2(IDescriptor other) {
 		IntervalMergerDescriptor o = (IntervalMergerDescriptor) other;
 		// #1 get the deepest branch of the identifiers
 		Id thisDeepestBranch = ITC4CB.getDeepest(this.id);

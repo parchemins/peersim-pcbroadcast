@@ -383,6 +383,8 @@ public class ITC4CB extends Stamp {
 					.normalize();
 		// (TODO) throw an exception
 		System.out.println("_removeBranch unhandled case");
+		System.out.println(i);
+		System.out.println(b);
 		return null;
 	}
 
@@ -395,7 +397,7 @@ public class ITC4CB extends Stamp {
 		return ITC4CB._getBranches(this.getId());
 	};
 
-	private static List<Id> _getBranches(Id i) {
+	public static List<Id> _getBranches(Id i) {
 		// #1 gbs( 1 ) :- [ 1 ]
 		if (i.isLeaf() && i.isSet()) {
 			ArrayList<Id> result = new ArrayList<Id>();
@@ -415,9 +417,43 @@ public class ITC4CB extends Stamp {
 			return result;
 		}
 		// #4 gbs( (l, r) ) :- gbs( (l, 0) ).addAll( gbs( (0, r) ))
-		List<Id> result = ITC4CB._getBranches(i.getLeft());
-		result.addAll(ITC4CB._getBranches(i.getRight()));
+		List<Id> result = new ArrayList<Id>();
+		result.addAll(ITC4CB._getBranches(new Id().setAsNode().setLeft(i.getLeft()).setRight(new Id(0).setAsLeaf())));
+		result.addAll(ITC4CB._getBranches(new Id().setAsNode().setLeft(new Id(0).setAsLeaf()).setRight(i.getRight())));
 		return result;
+	}
+
+	/**
+	 * Get the closest branch from from's id to of's id.
+	 * 
+	 * @param from
+	 * @param of
+	 * @return The closest branch along with its closeness degree.
+	 */
+	public static IdAndDepth getClosestBranch(Id from, Id of) {
+		Id result = null;
+		// #1 get all branches of this' id and other's id
+		List<Id> myIds = ITC4CB._getBranches(from);
+		List<Id> oIds = ITC4CB._getBranches(of);
+		// #2 compare all to get the closest branches
+		Integer min = Integer.MAX_VALUE;
+		for (Id i1 : myIds) {
+			for (Id i2 : oIds) {
+				Integer distance = ITC4CB.distance(i1, i2);
+				if (min > distance) {
+					min = distance;
+					result = i1;
+				}
+			}
+		}
+
+		/*
+		 * System.out.println("BEGIN"); System.out.println("my " + myIds);
+		 * System.out.println("ot " + oIds); System.out.println(result);
+		 * System.out.println("END");
+		 */
+
+		return new IdAndDepth(result, min);
 	}
 
 	@Override

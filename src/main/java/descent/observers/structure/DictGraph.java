@@ -1691,4 +1691,20 @@ public class DictGraph {
 		}
 		return Stats.getFromSmall(sizes);
 	}
+
+	/**
+	 * Unique identifier, tree, etc. We measure the number of branches of peers
+	 * and make stats on it.
+	 * 
+	 * @return
+	 */
+	public Stats numberOfBranches() {
+		ArrayList<Double> nbBranches = new ArrayList<Double>();
+		for (Node n : CDynamicNetwork.networks.get(0)) {
+			IntervalMerger im = (IntervalMerger) n.getProtocol(IntervalMerger.pid);
+			nbBranches.add((double) im.ct.tracker.getBranches().size());
+		}
+		return Stats.getFromSmall(nbBranches);
+
+	}
 }
