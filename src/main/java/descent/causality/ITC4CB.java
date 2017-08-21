@@ -1,5 +1,9 @@
 package descent.causality;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+
 import itc.Event;
 import itc.Id;
 import itc.Stamp;
@@ -281,11 +285,9 @@ public class ITC4CB extends Stamp {
 			IdAndDepth left = ITC4CB._getDeepest(id.getLeft());
 			IdAndDepth right = ITC4CB._getDeepest(id.getRight());
 			if (left.depth > right.depth) {
-				return new IdAndDepth(new Id().setAsNode().setLeft(left.id).setRight(new Id(0)),
-						left.depth + 1);
+				return new IdAndDepth(new Id().setAsNode().setLeft(left.id).setRight(new Id(0)), left.depth + 1);
 			} else {
-				return new IdAndDepth(new Id().setAsNode().setLeft(new Id(0)).setRight(right.id),
-						right.depth + 1);
+				return new IdAndDepth(new Id().setAsNode().setLeft(new Id(0)).setRight(right.id), right.depth + 1);
 			}
 		}
 		// (TODO) throw an exception
@@ -373,15 +375,49 @@ public class ITC4CB extends Stamp {
 			return new Id(0).setAsLeaf();
 		// #2 rb( (l1, r1), (0, r2) ) :- norm( l1, rb(r1, r2) )
 		if (i.isNode() && b.isNode() && b.getLeft().isLeaf() && !b.getLeft().isSet())
-			return new Id(0).setAsNode().setLeft(i.getLeft())
-					.setRight(ITC4CB._removeBranch(i.getRight(), b.getRight())).normalize();
+			return new Id(0).setAsNode().setLeft(i.getLeft()).setRight(ITC4CB._removeBranch(i.getRight(), b.getRight()))
+					.normalize();
 		// #3 rb( (l1, r1), (l2, 0) ) :- norm( rb(l1, l2), r2 )
 		if (i.isNode() && b.isNode() && b.getRight().isLeaf() && !b.getRight().isSet())
-			return new Id(0).setAsNode().setLeft(ITC4CB._removeBranch(i.getLeft(), b.getLeft()))
-					.setRight(i.getRight()).normalize();
+			return new Id(0).setAsNode().setLeft(ITC4CB._removeBranch(i.getLeft(), b.getLeft())).setRight(i.getRight())
+					.normalize();
 		// (TODO) throw an exception
 		System.out.println("_removeBranch unhandled case");
 		return null;
+	}
+
+	/**
+	 * Get all the branches of the tree of ids as a list of ids.
+	 * 
+	 * @return The list of ids.
+	 */
+	public List<Id> getBranches() {
+		return ITC4CB._getBranches(this.getId());
+	};
+
+	private static List<Id> _getBranches(Id i) {
+		// #1 gbs( 1 ) :- [ 1 ]
+		if (i.isLeaf() && i.isSet()) {
+			ArrayList<Id> result = new ArrayList<Id>();
+			result.add(new Id(0).setAsLeaf().setValue(1));
+			return result;
+		}
+		// #2 gbs( (0, r) ) :- [ (0, gbs(r).hd) ]
+		if (i.isNode() && i.getLeft().isLeaf() && !i.getLeft().isSet()) {
+			ArrayList<Id> result = new ArrayList<Id>();
+			result.add(new Id().setAsNode().setLeft(new Id(0)).setRight(ITC4CB._getBranches(i.getRight()).get(0)));
+			return result;
+		}
+		// #3 gbs( (l, 0) ) :- [ (gbs(l).hd, 0) ]
+		if (i.isNode() && i.getRight().isLeaf() && !i.getRight().isSet()) {
+			ArrayList<Id> result = new ArrayList<Id>();
+			result.add(new Id().setAsNode().setLeft(ITC4CB._getBranches(i.getLeft()).get(0)).setRight(new Id(0)));
+			return result;
+		}
+		// #4 gbs( (l, r) ) :- gbs( (l, 0) ).addAll( gbs( (0, r) ))
+		List<Id> result = ITC4CB._getBranches(i.getLeft());
+		result.addAll(ITC4CB._getBranches(i.getRight()));
+		return result;
 	}
 
 	@Override

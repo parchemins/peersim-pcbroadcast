@@ -50,7 +50,7 @@ public class IntervalMerger extends TMan {
 	public void periodicCall() {
 		// #1 check if should swap and stuff
 		ArrayList<Node> toExamine = new ArrayList<Node>(this.partialViewTMan);
-		toExamine.addAll(this.partialView.getPeers());
+		// toExamine.addAll(this.partialView.getPeers());
 
 		Integer reduction = Integer.MIN_VALUE;
 		Node nodeReduction = null;

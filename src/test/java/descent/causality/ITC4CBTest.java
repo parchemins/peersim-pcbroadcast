@@ -174,4 +174,5 @@ public class ITC4CBTest extends TestCase {
 		assertTrue(s2.getEvent().isLeaf());
 		assertEquals(1, s2.getEvent().getValue());
 	}
+
 }
