@@ -1702,7 +1702,8 @@ public class DictGraph {
 		ArrayList<Double> nbBranches = new ArrayList<Double>();
 		for (Node n : CDynamicNetwork.networks.get(0)) {
 			IntervalMerger im = (IntervalMerger) n.getProtocol(IntervalMerger.pid);
-			nbBranches.add((double) im.ct.tracker.getBranches().size());
+			nbBranches.add((double) ITC4CB._getNbBranches(im.ct.tracker.getId()));
+			// nbBranches.add((double) im.ct.tracker.getBranches().size());
 		}
 		return Stats.getFromSmall(nbBranches);
 

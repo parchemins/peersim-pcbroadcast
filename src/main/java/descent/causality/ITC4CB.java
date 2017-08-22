@@ -3,6 +3,7 @@ package descent.causality;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import itc.Event;
 import itc.Id;
@@ -383,8 +384,6 @@ public class ITC4CB extends Stamp {
 					.normalize();
 		// (TODO) throw an exception
 		System.out.println("_removeBranch unhandled case");
-		System.out.println(i);
-		System.out.println(b);
 		return null;
 	}
 
@@ -398,29 +397,50 @@ public class ITC4CB extends Stamp {
 	};
 
 	public static List<Id> _getBranches(Id i) {
-		// #1 gbs( 1 ) :- [ 1 ]
+		ArrayList<Id> result = new ArrayList<Id>();
+		// #1 gbs( 1 ) :- [ (1) ]
 		if (i.isLeaf() && i.isSet()) {
-			ArrayList<Id> result = new ArrayList<Id>();
 			result.add(new Id(0).setAsLeaf().setValue(1));
 			return result;
 		}
-		// #2 gbs( (0, r) ) :- [ (0, gbs(r).hd) ]
+		// #2 gbs( (0, r) ) :- [ (0, gbs(r).hd) * |gbs(r)| ]
 		if (i.isNode() && i.getLeft().isLeaf() && !i.getLeft().isSet()) {
-			ArrayList<Id> result = new ArrayList<Id>();
-			result.add(new Id().setAsNode().setLeft(new Id(0)).setRight(ITC4CB._getBranches(i.getRight()).get(0)));
+			for (Id toExtend : ITC4CB._getBranches(i.getRight()))
+				result.add(new Id().setAsNode().setLeft(new Id(0)).setRight(toExtend));
 			return result;
+
 		}
-		// #3 gbs( (l, 0) ) :- [ (gbs(l).hd, 0) ]
+		// #3 gbs( (l, 0) ) :- [ (gbs(l).hd, 0) * |gbs(l)| ]
 		if (i.isNode() && i.getRight().isLeaf() && !i.getRight().isSet()) {
-			ArrayList<Id> result = new ArrayList<Id>();
-			result.add(new Id().setAsNode().setLeft(ITC4CB._getBranches(i.getLeft()).get(0)).setRight(new Id(0)));
+			for (Id toExtend : ITC4CB._getBranches(i.getLeft()))
+				result.add(new Id().setAsNode().setLeft(toExtend).setRight(new Id(0)));
 			return result;
 		}
 		// #4 gbs( (l, r) ) :- gbs( (l, 0) ).addAll( gbs( (0, r) ))
-		List<Id> result = new ArrayList<Id>();
 		result.addAll(ITC4CB._getBranches(new Id().setAsNode().setLeft(i.getLeft()).setRight(new Id(0).setAsLeaf())));
 		result.addAll(ITC4CB._getBranches(new Id().setAsNode().setLeft(new Id(0).setAsLeaf()).setRight(i.getRight())));
 		return result;
+	}
+
+	/**
+	 * Get the number of branches in the identifier tree.
+	 * 
+	 * @param i
+	 *            The identifier.
+	 * @return The number of branches.
+	 */
+	public static Integer _getNbBranches(Id i) {
+		// #1 nbb( 1 ) :- 1
+		if (i.isLeaf() && i.isSet())
+			return 1;
+		// #2 nbb( (0, r) ) :- nbb( r )
+		if (i.isNode() && i.getLeft().isLeaf() && !i.getLeft().isSet())
+			return ITC4CB._getNbBranches(i.getRight());
+		// #3 nbb( (l, 0) ) :- nbb( l )
+		if (i.isNode() && i.getRight().isLeaf() && !i.getRight().isSet())
+			return ITC4CB._getNbBranches(i.getLeft());
+		// #4 nbb( l, r) ) :- nbb(l) + nbb(r)
+		return ITC4CB._getNbBranches(i.getLeft()) + ITC4CB._getNbBranches(i.getRight());
 	}
 
 	/**
