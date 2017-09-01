@@ -14,9 +14,9 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
 
-import descent.causality.ITC4CB;
+import descent.causalbroadcast.itc.ITC4CB;
+import descent.causalbroadcast.itc.ITCCBProtocol;
 import descent.controllers.CDynamicNetwork;
-import descent.intervalmerger.IntervalMerger;
 import descent.rps.APeerSampling;
 import descent.rps.IPeerSampling;
 import descent.slicer.RankDescriptor;
@@ -1671,7 +1671,7 @@ public class DictGraph {
 	public Stats maxDepthOfIdentifiers() {
 		ArrayList<Double> depths = new ArrayList<Double>();
 		for (Node n : CDynamicNetwork.networks.get(0)) {
-			IntervalMerger im = (IntervalMerger) n.getProtocol(IntervalMerger.pid);
+			ITCCBProtocol im = (ITCCBProtocol) n.getProtocol(ITCCBProtocol.pid);
 			depths.add(ITC4CB._depth(ITC4CB.getDeepest(im.ct.tracker.getId())).doubleValue());
 		}
 		return Stats.getFromSmall(depths);
@@ -1686,7 +1686,7 @@ public class DictGraph {
 	public Stats sizeOfIdentifier() {
 		ArrayList<Double> sizes = new ArrayList<Double>();
 		for (Node n : CDynamicNetwork.networks.get(0)) {
-			IntervalMerger im = (IntervalMerger) n.getProtocol(IntervalMerger.pid);
+			ITCCBProtocol im = (ITCCBProtocol) n.getProtocol(ITCCBProtocol.pid);
 			sizes.add((double) im.ct.tracker.getId().encode(null).getSizeBits());
 		}
 		return Stats.getFromSmall(sizes);
@@ -1701,7 +1701,7 @@ public class DictGraph {
 	public Stats numberOfBranches() {
 		ArrayList<Double> nbBranches = new ArrayList<Double>();
 		for (Node n : CDynamicNetwork.networks.get(0)) {
-			IntervalMerger im = (IntervalMerger) n.getProtocol(IntervalMerger.pid);
+			ITCCBProtocol im = (ITCCBProtocol) n.getProtocol(ITCCBProtocol.pid);
 			nbBranches.add((double) ITC4CB._getNbBranches(im.ct.tracker.getId()));
 			// nbBranches.add((double) im.ct.tracker.getBranches().size());
 		}

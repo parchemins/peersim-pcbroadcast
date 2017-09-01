@@ -1,6 +1,6 @@
 package descent.controllers;
 
-import descent.intervalmerger.IntervalMerger;
+import descent.causalbroadcast.itc.ITCCBProtocol;
 import itc.Id;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
@@ -39,11 +39,11 @@ public class CChurnPhase implements Control {
 					rnToJoinFrom = CommonState.r.nextInt(Network.size());
 				}
 
-				IntervalMerger imLeaver = (IntervalMerger) Network.get(rnLeaver).getProtocol(IntervalMerger.pid);
-				IntervalMerger imToMergeWith = (IntervalMerger) Network.get(rnToMergeWith)
-						.getProtocol(IntervalMerger.pid);
-				IntervalMerger imToJoinFrom = (IntervalMerger) Network.get(rnToJoinFrom)
-						.getProtocol(IntervalMerger.pid);
+				ITCCBProtocol imLeaver = (ITCCBProtocol) Network.get(rnLeaver).getProtocol(ITCCBProtocol.pid);
+				ITCCBProtocol imToMergeWith = (ITCCBProtocol) Network.get(rnToMergeWith)
+						.getProtocol(ITCCBProtocol.pid);
+				ITCCBProtocol imToJoinFrom = (ITCCBProtocol) Network.get(rnToJoinFrom)
+						.getProtocol(ITCCBProtocol.pid);
 
 				// System.out.println("BEFOAR");
 				// System.out.println(imLeaver.ct.tracker.getId());

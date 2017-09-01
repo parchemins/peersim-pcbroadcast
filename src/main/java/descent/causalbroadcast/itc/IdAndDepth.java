@@ -1,4 +1,4 @@
-package descent.causality;
+package descent.causalbroadcast.itc;
 
 import itc.Id;
 

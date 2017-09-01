@@ -1,4 +1,4 @@
-package descent.causality;
+package descent.causalbroadcast.rps;
 
 import peersim.core.Node;
 

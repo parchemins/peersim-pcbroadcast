@@ -1,9 +1,7 @@
-package descent.intervalmerger;
+package descent.causalbroadcast.itc;
 
 import java.util.ArrayList;
 
-import descent.causality.CausalityTracker;
-import descent.causality.ITC4CB;
 import descent.merging.MergingRegister;
 import descent.rps.IPeerSampling;
 import descent.spray.SprayPartialView;
@@ -17,32 +15,32 @@ import peersim.core.Node;
  * network aims to put closer peers with "adjacent" identifiers to reduce the
  * size of the global binary tree.
  */
-public class IntervalMerger extends TMan {
+public class ITCCBProtocol extends TMan {
 
 	public CausalityTracker ct;
 
-	public IntervalMerger(String options) {
+	public ITCCBProtocol(String options) {
 		super(options);
 		this.ct = new CausalityTracker();
-		this.descriptor = new IntervalMergerDescriptor();
+		this.descriptor = new ITCCBDescriptor();
 	}
 
-	public IntervalMerger() {
+	public ITCCBProtocol() {
 		super();
 		this.ct = new CausalityTracker();
-		this.descriptor = new IntervalMergerDescriptor();
+		this.descriptor = new ITCCBDescriptor();
 	}
 
 	@Override
 	public void join(Node joiner, Node contact) {
 		// #1 on join, get an Id to increment for causality tracking matters
 		if (contact != null) {
-			IntervalMerger im = (IntervalMerger) contact.getProtocol(IntervalMerger.pid);
+			ITCCBProtocol im = (ITCCBProtocol) contact.getProtocol(ITCCBProtocol.pid);
 			this.ct.borrow(im.ct.tracker);
-			((IntervalMergerDescriptor) im.descriptor).setId(im.ct.tracker.getId());
+			((ITCCBDescriptor) im.descriptor).setId(im.ct.tracker.getId());
 			// (TODO) lease for a defined duration.
 		}
-		((IntervalMergerDescriptor) this.descriptor).setId(this.ct.tracker.getId());
+		((ITCCBDescriptor) this.descriptor).setId(this.ct.tracker.getId());
 
 		super.join(joiner, contact);
 	}
@@ -61,11 +59,11 @@ public class IntervalMerger extends TMan {
 
 		// process the best split. //(TODO)
 		for (Node node : toExamine) {
-			IntervalMerger im = (IntervalMerger) node.getProtocol(IntervalMerger.pid);
+			ITCCBProtocol im = (ITCCBProtocol) node.getProtocol(ITCCBProtocol.pid);
 		}
 
 		for (Node node : toExamine) {
-			IntervalMerger im = (IntervalMerger) node.getProtocol(IntervalMerger.pid);
+			ITCCBProtocol im = (ITCCBProtocol) node.getProtocol(ITCCBProtocol.pid);
 			// #A before
 			// Integer sumOfNodes = this.ct.tracker.numberOfNodes() +
 			// im.ct.tracker.numberOfNodes();
@@ -118,7 +116,7 @@ public class IntervalMerger extends TMan {
 
 		if (nodeReduction != null && reduction > 0) {
 			this.updateId(myIdReduction);
-			IntervalMerger im = (IntervalMerger) nodeReduction.getProtocol(IntervalMerger.pid);
+			ITCCBProtocol im = (ITCCBProtocol) nodeReduction.getProtocol(ITCCBProtocol.pid);
 			im.updateId(imIdReduction);
 		}
 
@@ -131,7 +129,7 @@ public class IntervalMerger extends TMan {
 	 * @param remote
 	 *            The remote peer.
 	 */
-	public void borrow(IntervalMerger remote) {
+	public void borrow(ITCCBProtocol remote) {
 		Id.sum(this.ct.tracker.getId(), remote.release());
 		// ugly: double assign since Id.sum is ugly and set this
 		this.updateId(this.ct.tracker.getId());
@@ -143,7 +141,7 @@ public class IntervalMerger extends TMan {
 	 * @param remote
 	 *            The remote peer.
 	 */
-	public void borrowAll(IntervalMerger remote) {
+	public void borrowAll(ITCCBProtocol remote) {
 		Id.sum(this.ct.tracker.getId(), remote.releaseAll());
 		// ugly: double assign since Id.sum is ugly and set this
 		this.updateId(this.ct.tracker.getId());
@@ -181,18 +179,18 @@ public class IntervalMerger extends TMan {
 		// #1 update the causal broadcast mechanism
 		this.ct.tracker.setId(i);
 		// #2 update the descriptor
-		((IntervalMergerDescriptor) this.descriptor).setId(this.ct.tracker.getId());
+		((ITCCBDescriptor) this.descriptor).setId(this.ct.tracker.getId());
 	}
 
 	@Override
 	public IPeerSampling clone() {
-		IntervalMerger imClone = new IntervalMerger();
+		ITCCBProtocol imClone = new ITCCBProtocol();
 		try {
 			imClone.partialView = (SprayPartialView) this.partialView.clone();
 			imClone.register = (MergingRegister) this.register.clone();
 			imClone.partialViewTMan = (TManPartialView) this.partialViewTMan.clone();
-			imClone.descriptor = new IntervalMergerDescriptor();
-			((IntervalMergerDescriptor) imClone.descriptor).setId(((IntervalMergerDescriptor) this.descriptor).id);
+			imClone.descriptor = new ITCCBDescriptor();
+			((ITCCBDescriptor) imClone.descriptor).setId(((ITCCBDescriptor) this.descriptor).id);
 			imClone.ct = (CausalityTracker) this.ct.clone();
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();

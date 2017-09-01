@@ -1,4 +1,4 @@
-package descent.causality;
+package descent.applications;
 
 /**
  * An application using network communications.

@@ -1,7 +1,9 @@
-package descent.causality;
+package descent.causalbroadcast.itc;
 
 import org.junit.Test;
 
+import descent.causalbroadcast.itc.CausalityTracker;
+import descent.causalbroadcast.itc.ITC4CB;
 import junit.framework.TestCase;
 
 public class CausalityTrackerTest extends TestCase {

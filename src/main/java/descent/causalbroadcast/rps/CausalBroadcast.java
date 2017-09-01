@@ -1,9 +1,11 @@
-package descent.causality;
+package descent.causalbroadcast.rps;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import descent.applications.IApplication;
+import descent.causalbroadcast.IBroadcast;
 import descent.rps.IMessage;
 import descent.rps.PartialView;
 import peersim.core.Node;
@@ -12,7 +14,7 @@ import peersim.core.Node;
  * A causal broadcast built on top of peer-sampling protocols such as Cyclon or
  * Spray.
  */
-public class CausalBroadcast {
+public class CausalBroadcast implements IBroadcast {
 
 	Node p; // The identifier of the peer
 	PartialView partialView; // The partial view of provided by the PSP

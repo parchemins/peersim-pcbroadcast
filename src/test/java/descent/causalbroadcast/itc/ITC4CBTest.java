@@ -1,7 +1,8 @@
-package descent.causality;
+package descent.causalbroadcast.itc;
 
 import org.junit.Test;
 
+import descent.causalbroadcast.itc.ITC4CB;
 import itc.Event;
 import itc.Id;
 import junit.framework.TestCase;

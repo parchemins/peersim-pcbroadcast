@@ -1,8 +1,7 @@
-package descent.intervalmerger;
+package descent.causalbroadcast.itc;
 
 import java.util.List;
 
-import descent.causality.ITC4CB;
 import descent.tman.IDescriptor;
 import itc.Id;
 
@@ -11,11 +10,11 @@ import itc.Id;
  * is the identifier contained in the stamp that it uses to increment its
  * vector.
  */
-public class IntervalMergerDescriptor implements IDescriptor {
+public class ITCCBDescriptor implements IDescriptor {
 
 	public Id id;
 
-	public IntervalMergerDescriptor() {
+	public ITCCBDescriptor() {
 		this.id = new Id(0);
 	}
 
@@ -24,12 +23,12 @@ public class IntervalMergerDescriptor implements IDescriptor {
 	}
 
 	public double ranking(IDescriptor other) {
-		IntervalMergerDescriptor o = (IntervalMergerDescriptor) other;
+		ITCCBDescriptor o = (ITCCBDescriptor) other;
 		return ITC4CB.getClosestBranch(this.id, o.id).depth;
 	}
 
 	public double ranking2(IDescriptor other) {
-		IntervalMergerDescriptor o = (IntervalMergerDescriptor) other;
+		ITCCBDescriptor o = (ITCCBDescriptor) other;
 		// #1 get the deepest branch of the identifiers
 		Id thisDeepestBranch = ITC4CB.getDeepest(this.id);
 		Id otherDeepestBranch = ITC4CB.getDeepest(o.id);
