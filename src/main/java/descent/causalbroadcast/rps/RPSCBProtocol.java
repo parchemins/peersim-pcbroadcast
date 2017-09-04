@@ -1,6 +1,7 @@
 package descent.causalbroadcast.rps;
 
 import descent.applications.DummyApp;
+import descent.rps.IMessage;
 import descent.spray.Spray;
 import peersim.core.Node;
 import peersim.edsim.EDProtocol;
@@ -18,8 +19,18 @@ public class RPSCBProtocol extends Spray implements EDProtocol {
 		this.cb = new CausalBroadcast(this.node, this.partialView, new DummyApp());
 	}
 
-	public void processEvent(Node arg0, int arg1, Object arg2) {
-
+	/**
+	 * @param node
+	 *            The receiving node.
+	 * @param pid
+	 *            The protocol id of the receiving node
+	 * @param event
+	 *            The event raised, ie, here the received message.
+	 */
+	public void processEvent(Node node, int pid, Object event) {
+		if (event instanceof MLockedBroadcast || event instanceof MRegularBroadcast
+				|| event instanceof MUnlockBroadcast)
+			this.cb.receive((IMessage) event);
 	}
 
 }

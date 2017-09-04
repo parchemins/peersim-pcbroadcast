@@ -2,13 +2,16 @@ package descent.causalbroadcast.rps;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import descent.applications.IApplication;
 import descent.causalbroadcast.IBroadcast;
 import descent.rps.IMessage;
 import descent.rps.PartialView;
+import peersim.config.FastConfig;
 import peersim.core.Node;
+import peersim.transport.Transport;
 
 /**
  * A causal broadcast built on top of peer-sampling protocols such as Cyclon or
@@ -69,8 +72,8 @@ public class CausalBroadcast implements IBroadcast {
 	}
 
 	private void _broadcast(IMessage message) {
-		// (TODO) send to all neighbors. For now, sendTo = receive... Add
-		// latencies etc. Maybe use the event-base peersim.
+		for (Node q : new HashSet<Node>(partialView.getPeers()))
+			this.sendTo(q, message);
 	}
 
 	/**
@@ -84,7 +87,7 @@ public class CausalBroadcast implements IBroadcast {
 		if (message instanceof MLockedBroadcast) {
 			ArcPair fromto = (ArcPair) message.getPayload();
 			if (fromto.equals(this.p)) {
-				// (TODO) sendTo(fromto.from, new MUnlockBroadcast(this.p))
+				this.sendTo(fromto.getFrom(), new MUnlockBroadcast(this.p));
 			} else {
 				this._broadcast(message);
 			}
@@ -92,9 +95,8 @@ public class CausalBroadcast implements IBroadcast {
 		if (message instanceof MUnlockBroadcast) {
 			Node to = (Node) message.getPayload();
 			if (this.buffers.containsKey(to)) {
-				for (IMessage m : this.buffers.get(to)) {
-					// sendTo(to, m);
-				}
+				for (IMessage m : this.buffers.get(to))
+					this.sendTo(to, m);
 				this.buffers.remove(to);
 			}
 		}
@@ -103,6 +105,18 @@ public class CausalBroadcast implements IBroadcast {
 			this.broadcast((IMessage) message.getPayload());
 		}
 
+	}
+
+	/**
+	 * Send a message to a particular node.
+	 * 
+	 * @param q
+	 *            The node to send a message to.
+	 * @param m
+	 *            The message to send.
+	 */
+	private void sendTo(Node q, IMessage m) {
+		((Transport) q.getProtocol(FastConfig.getTransport(RPSCBProtocol.pid))).send(q, this.p, m, RPSCBProtocol.pid);
 	}
 
 	@Override
