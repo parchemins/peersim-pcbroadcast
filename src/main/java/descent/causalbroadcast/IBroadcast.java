@@ -14,13 +14,5 @@ public interface IBroadcast {
 	 * @param message
 	 *            The message to broadcast.
 	 */
-	public void broadcast(IMessage message);
-
-	/**
-	 * Received a broadcasted message.
-	 * 
-	 * @param message
-	 *            The received message.
-	 */
-	public void receive(IMessage message);
+	public void send(IMessage message);
 }

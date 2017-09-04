@@ -14,7 +14,7 @@ public class MUnlockBroadcast implements IMessage {
 		this.to = to;
 	}
 
-	public Object getPayload() {
+	public Node getPayload() {
 		return this.to;
 	}
 

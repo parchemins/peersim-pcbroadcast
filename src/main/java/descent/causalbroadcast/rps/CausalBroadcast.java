@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import descent.applications.IApplication;
+import descent.causalbroadcast.AMBroadcast;
 import descent.causalbroadcast.IBroadcast;
 import descent.rps.IMessage;
 import descent.rps.PartialView;
@@ -19,15 +20,15 @@ import peersim.transport.Transport;
  */
 public class CausalBroadcast implements IBroadcast {
 
-	Node p; // The identifier of the peer
-	PartialView partialView; // The partial view of provided by the PSP
-	HashMap<Node, List<IMessage>> buffers; // Buffering messages
-	IApplication app;
+	private final Node p; // The identifier of the peer
+	private PartialView partialView; // The partial view
+	private HashMap<Node, List<AMBroadcast>> buffers; // Buffering messages
+	private IApplication app;
 
 	public CausalBroadcast(Node p, PartialView partialView, IApplication app) {
 		this.p = p;
 		this.partialView = partialView;
-		this.buffers = new HashMap<Node, List<IMessage>>();
+		this.buffers = new HashMap<Node, List<AMBroadcast>>();
 		this.app = app;
 	}
 
@@ -42,8 +43,9 @@ public class CausalBroadcast implements IBroadcast {
 	 */
 	public void onChannelOpen(Node i, Node q) {
 		if (!i.equals(this.p) && this.partialView.size() - this.buffers.size() > 1 && !this.buffers.containsKey(q)) {
-			this.buffers.put(q, new ArrayList<IMessage>());
-			this.broadcast(new MLockedBroadcast(this.p, q));
+			this.buffers.put(q, new ArrayList<AMBroadcast>());
+
+			this._broadcast(new MLockedBroadcast(VisibilityMatrix.get(this.p), this.p, q));
 		}
 	}
 
@@ -59,19 +61,31 @@ public class CausalBroadcast implements IBroadcast {
 	}
 
 	/**
-	 * Broadcast a message to the whole network. The broadcast is causal.
+	 * Broadcast the message. This is called once per message. It increments a
+	 * local counter used to make unique identifiers.
 	 * 
-	 * @param message
+	 * @param payload
 	 *            The message to send.
 	 */
-	public void broadcast(IMessage payload) {
-		MRegularBroadcast message = new MRegularBroadcast(payload);
-		for (List<IMessage> b : this.buffers.values())
+	public void send(IMessage payload) {
+		MRegularBroadcast message = new MRegularBroadcast(VisibilityMatrix.get(this.p), payload);
+		this.broadcast(message);
+	}
+
+	/**
+	 * Broadcast a message to the whole network. The broadcast is causal. This
+	 * is called once per peer, for it acts has a forward mechanism.
+	 * 
+	 * @param message
+	 *            The message to broadcast.
+	 */
+	public void broadcast(AMBroadcast message) {
+		for (List<AMBroadcast> b : this.buffers.values())
 			b.add(message);
 		this._broadcast(message);
 	}
 
-	private void _broadcast(IMessage message) {
+	private void _broadcast(AMBroadcast message) {
 		for (Node q : new HashSet<Node>(partialView.getPeers()))
 			this.sendTo(q, message);
 	}
@@ -83,26 +97,30 @@ public class CausalBroadcast implements IBroadcast {
 	 *            The received message.
 	 */
 	public void receive(IMessage message) {
-		// (TODO) if !already received message
-		if (message instanceof MLockedBroadcast) {
-			ArcPair fromto = (ArcPair) message.getPayload();
-			if (fromto.equals(this.p)) {
-				this.sendTo(fromto.getFrom(), new MUnlockBroadcast(this.p));
-			} else {
-				this._broadcast(message);
-			}
-		}
 		if (message instanceof MUnlockBroadcast) {
-			Node to = (Node) message.getPayload();
+			Node to = ((MUnlockBroadcast) message).getPayload();
 			if (this.buffers.containsKey(to)) {
 				for (IMessage m : this.buffers.get(to))
 					this.sendTo(to, m);
 				this.buffers.remove(to);
 			}
-		}
-		if (message instanceof MRegularBroadcast) {
-			this.app.deliver(message.getPayload());
-			this.broadcast((IMessage) message.getPayload());
+		} else {
+			// only broadcasted messages are marked
+			if (!VisibilityMatrix.alreadyReceived(this.p, (AMBroadcast) message)) {
+				if (message instanceof MLockedBroadcast) {
+					ArcPair fromto = ((MLockedBroadcast) message).getPayload();
+					if (fromto.equals(this.p)) {
+						this.sendTo(fromto.getFrom(), new MUnlockBroadcast(this.p));
+					} else {
+						this._broadcast((MLockedBroadcast) message);
+					}
+				}
+				if (message instanceof MRegularBroadcast) {
+					VisibilityMatrix.incrementFrom(this.p, (MRegularBroadcast) message);
+					this.app.deliver(message.getPayload());
+					this.broadcast((MRegularBroadcast) message);
+				}
+			}
 		}
 
 	}
@@ -122,7 +140,7 @@ public class CausalBroadcast implements IBroadcast {
 	@Override
 	protected Object clone() throws CloneNotSupportedException {
 		CausalBroadcast cb = new CausalBroadcast(this.p, (PartialView) this.partialView.clone(), this.app);
-		cb.buffers = (HashMap<Node, List<IMessage>>) this.buffers.clone();
+		cb.buffers = (HashMap<Node, List<AMBroadcast>>) this.buffers.clone();
 		return cb;
 	}
 

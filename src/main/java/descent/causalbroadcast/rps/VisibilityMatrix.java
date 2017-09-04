@@ -1,6 +1,6 @@
 package descent.causalbroadcast.rps;
 
-import descent.rps.IMessage;
+import descent.causalbroadcast.AMBroadcast;
 import peersim.core.Node;
 
 /**
@@ -40,9 +40,9 @@ public class VisibilityMatrix {
 	 * @param m
 	 *            The received message.
 	 */
-	public static void incrementFrom(Node incrementer, IMessage m) {
-		// (TODO)
-		// VisibilityMatrix.matrix[(int) incrementer.getID()][m]
+	public static void incrementFrom(Node incrementer, AMBroadcast m) {
+		VisibilityMatrix.matrix[(int) incrementer.getID()][(int) m.id.origin.getID()] = Math
+				.max(VisibilityMatrix.matrix[(int) incrementer.getID()][(int) m.id.origin.getID()], m.id.counter);
 	}
 
 	/**
@@ -53,9 +53,20 @@ public class VisibilityMatrix {
 	 * @param m
 	 *            The message received.
 	 */
-	public static void alreadyReceived(Node checker, IMessage m) {
-		//return VisibilityMatrix.matrix[]
-		// (TODO)
+	public static boolean alreadyReceived(Node checker, AMBroadcast m) {
+		return VisibilityMatrix.matrix[(int) checker.getID()][(int) m.id.origin.getID()] <= m.id.counter;
+	}
+
+	/**
+	 * Get an identifier to assign it to a message.
+	 * 
+	 * @param n
+	 *            The node that wants an id.
+	 * @return The generated identifier.
+	 */
+	public static MIdentifier get(Node n) {
+		VisibilityMatrix.increment(n);
+		return new MIdentifier(n, VisibilityMatrix.matrix[(int) n.getID()][(int) n.getID()]);
 	}
 
 }
