@@ -8,10 +8,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import descent.rps.IPartialView;
 import peersim.core.CommonState;
 import peersim.core.Node;
 
-public class TManPartialView extends HashSet<Node> {
+public class TManPartialView extends HashSet<Node> implements IPartialView {
 
 	/**
 	 * Get a random peer from the map
@@ -125,6 +126,42 @@ public class TManPartialView extends HashSet<Node> {
 	public void replace(Node replaced, Node replacer) {
 		this.remove(replaced);
 		this.add(replacer);
+	}
+
+	public List<Node> getPeers() {
+		return new ArrayList<Node>(this);
+	}
+
+	public List<Node> getPeers(int k) {
+		ArrayList<Node> sample = new ArrayList<Node>();
+		if (this.size() == k || k == Integer.MAX_VALUE) {
+			sample = new ArrayList<Node>(this);
+		} else {
+			sample = new ArrayList<Node>();
+			ArrayList<Node> clone = new ArrayList<Node>(this);
+			while (sample.size() < Math.min(k, this.size())) {
+				int rn = CommonState.r.nextInt(clone.size());
+				sample.add(clone.get(rn));
+				clone.remove(rn);
+			}
+		}
+		return sample;
+	}
+
+	public boolean removeNode(Node peer) {
+		return super.remove(peer);
+	}
+
+	public boolean addNeighbor(Node peer) {
+		return super.add(peer);
+	}
+
+	public boolean contains(Node peer) {
+		return super.contains(peer);
+	}
+
+	public int getIndex(Node neighbor) {
+		return -1; // ugly, should not be here
 	}
 
 }

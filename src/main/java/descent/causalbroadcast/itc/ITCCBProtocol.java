@@ -1,6 +1,6 @@
 package descent.causalbroadcast.itc;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import descent.merging.MergingRegister;
 import descent.rps.IPeerSampling;
@@ -47,11 +47,12 @@ public class ITCCBProtocol extends TMan {
 
 	public void periodicCall() {
 		// #1 check if should swap and stuff
-		//ArrayList<Node> toExamine = new ArrayList<Node>(this.partialViewTMan);
-		//toExamine.addAll(this.partialView.getPeers());
+		// ArrayList<Node> toExamine = new
+		// ArrayList<Node>(this.partialViewTMan);
+		// toExamine.addAll(this.partialView.getPeers());
 
-		ArrayList<Node> toExamine = new ArrayList<Node>(this.partialView.getPeers());
-		
+		List<Node> toExamine = ((IPeerSampling) this.node.getProtocol(this.rps)).getPeers();
+
 		Integer reduction = Integer.MIN_VALUE;
 		Node nodeReduction = null;
 		Id myIdReduction = null;
@@ -89,8 +90,8 @@ public class ITCCBProtocol extends TMan {
 			// System.out.println(this.ct.tracker.getId());
 			ITC4CB toMerge = new ITC4CB();
 			toMerge.setId(toRemove);
-			//toMerge.setId(this.ct.tracker.getId());
-			//this.ct.tracker.setId(new Id(0));
+			// toMerge.setId(this.ct.tracker.getId());
+			// this.ct.tracker.setId(new Id(0));
 			im.ct.tracker.join(toMerge);
 			if (this.ct.tracker.getId().isLeaf() && !this.ct.tracker.getId().isSet()) {
 				Id newId = im.ct.tracker.fork().getId();
@@ -186,8 +187,6 @@ public class ITCCBProtocol extends TMan {
 	public IPeerSampling clone() {
 		ITCCBProtocol imClone = new ITCCBProtocol();
 		try {
-			imClone.partialView = (SprayPartialView) this.partialView.clone();
-			imClone.register = (MergingRegister) this.register.clone();
 			imClone.partialViewTMan = (TManPartialView) this.partialViewTMan.clone();
 			imClone.descriptor = new ITCCBDescriptor();
 			((ITCCBDescriptor) imClone.descriptor).setId(((ITCCBDescriptor) this.descriptor).id);

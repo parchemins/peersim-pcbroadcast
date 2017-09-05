@@ -3,75 +3,74 @@ package descent.tman;
 import java.util.ArrayList;
 import java.util.List;
 
-import descent.merging.MergingRegister;
+import descent.rps.APeerSampling;
 import descent.rps.IMessage;
 import descent.rps.IPeerSampling;
-import descent.spray.Spray;
-import descent.spray.SprayPartialView;
+import peersim.config.Configuration;
+import peersim.core.CommonState;
 import peersim.core.Node;
 
 /**
  * Structured overlay builder using a ranking function to converge to the
  * desired topology.
  */
-public class TMan extends Spray {
+public class TMan extends APeerSampling {
 
 	// #A Configuration from peersim
-	// (TODO) configurable view size depending on rps
+	private final static String PAR_RPS = "rps";
+	protected int rps;
 
 	// #B Local variables
 	public TManPartialView partialViewTMan;
 	public IDescriptor descriptor;
 
-	public Integer age;
+	private boolean shuffleUsingRPS = false;
 
 	public TMan(String prefix) {
 		super(prefix);
 		this.partialViewTMan = new TManPartialView();
 		this.descriptor = Descriptor.get();
-		this.age = 0;
+
+		this.rps = Configuration.getPid(prefix + "." + TMan.PAR_RPS);
 	}
 
 	public TMan() {
 		super();
 		this.partialViewTMan = new TManPartialView();
 		this.descriptor = Descriptor.get();
-		this.age = 0;
 	}
 
 	public void periodicCall() {
-		super.periodicCall();
+		if (!this.isUp)
+			return;
 
-		if (!this.isUp) {
+		this.shuffleUsingRPS = !this.shuffleUsingRPS;
+
+		// #1 Choose a neighbor to exchange with
+		List<Node> randomNeighbors = ((IPeerSampling) this.node.getProtocol(this.rps)).getPeers();
+
+		Node q = null;
+		TMan qTMan = null;
+		if (this.partialViewTMan.size() > 0 && !this.shuffleUsingRPS) {
+			// #A from tman's partial view
+			q = this.partialViewTMan.getRandom();
+		} else if (randomNeighbors.size() > 0) {
+			// #B from rps' partial view
+			q = randomNeighbors.get(CommonState.r.nextInt(randomNeighbors.size()));
+
+		}
+		qTMan = (TMan) q.getProtocol(TMan.pid);
+		if (!qTMan.isUp) {
+			this.partialViewTMan.remove(q);
 			return;
 		}
 
-		++this.age;
-
-		// #1 Choose a neighbor to exchange with
-		Node q = null;
-		TMan qTMan = null;
-		if (this.partialViewTMan.size() > 0 && this.age % 2 == 0) {
-			q = this.partialViewTMan.getRandom();
-			qTMan = (TMan) q.getProtocol(TMan.pid);
-			if (!qTMan.isUp) {
-				this.partialViewTMan.remove(q);
-				return;
-			}
-		} else if (this.partialView.size() > 0) {
-			q = this.partialView.getOldest();
-			qTMan = (TMan) q.getProtocol(TMan.pid);
-			if (!qTMan.isUp) {
-				return;
-			}
-		}
-
 		// #2 Prepare a sample
-		List<Node> sample = this.partialViewTMan.getSample(this.node, q, this.partialView.getPeers(),
-				Math.floor(this.partialView.size() / 2));
-		IMessage result = qTMan.onPeriodicCallTMan(this.node, new TManMessage(sample));
+		List<Node> sample = this.partialViewTMan.getSample(this.node, q, randomNeighbors,
+				Math.floor(randomNeighbors.size() / 2));
+		IMessage result = qTMan.onPeriodicCall(this.node, new TManMessage(sample));
 		// #3 Integrate remote sample if it fits better
-		this.partialViewTMan.merge(this, this.node, (List<Node>) result.getPayload(), this.partialView.size());
+		this.partialViewTMan.merge(this, this.node, (List<Node>) result.getPayload(), randomNeighbors.size());
 	}
 
 	/**
@@ -83,30 +82,27 @@ public class TMan extends Spray {
 	 *            The message containing descriptors of neighbors
 	 * @return The response of the receiving peer to the origin
 	 */
-	public IMessage onPeriodicCallTMan(Node origin, IMessage message) {
-		++this.age;
+	public IMessage onPeriodicCall(Node origin, IMessage message) {
+		List<Node> randomNeighbors = ((IPeerSampling) this.node.getProtocol(this.rps)).getPeers();
 		// #1 prepare a sample
-		List<Node> sample = this.partialViewTMan.getSample(this.node, origin, this.partialView.getPeers(),
-				Math.floor(this.partialView.size() / 2));
+		List<Node> sample = this.partialViewTMan.getSample(this.node, origin, randomNeighbors,
+				Math.floor(randomNeighbors.size() / 2));
 		// #2 merge the received sample
-		this.partialViewTMan.merge(this, this.node, (List<Node>) message.getPayload(), this.partialView.size());
+		this.partialViewTMan.merge(this, this.node, (List<Node>) message.getPayload(), randomNeighbors.size());
 		// #3 send the prepared sample to origin
 		return new TManMessage(sample);
 	}
 
 	public void join(Node joiner, Node contact) {
-		super.join(joiner, contact);
-
 		this.partialViewTMan.clear();
 
-		if (this.node == null) {
+		if (this.node == null)
 			this.node = joiner;
-		}
 
 		if (contact != null) {
-			this.addNeighborTMan(contact);
+			this.addNeighbor(contact);
 			TMan contactTMan = (TMan) contact.getProtocol(TMan.pid);
-			contactTMan.onSubscriptionTMan(this.node);
+			contactTMan.onSubscription(this.node);
 		}
 		this.isUp = true;
 	}
@@ -117,22 +113,21 @@ public class TMan extends Spray {
 	 * @param origin
 	 *            The newcomer
 	 */
-	public void onSubscriptionTMan(Node origin) {
+	public void onSubscription(Node origin) {
 		List<Node> aliveNeighbors = this.getAliveNeighbors();
 		if (aliveNeighbors.size() > 0) {
 			List<Node> sample = new ArrayList<Node>();
 			sample.add(origin);
 			for (Node neighbor : aliveNeighbors) {
 				TMan neighborTMan = (TMan) neighbor.getProtocol(TMan.pid);
-				neighborTMan.addNeighborTMan(origin);
+				neighborTMan.addNeighbor(origin);
 			}
 		} else {
-			this.addNeighborTMan(origin);
+			this.addNeighbor(origin);
 		}
 	}
 
 	public void leave() {
-		super.leave();
 		this.isUp = false;
 		this.partialViewTMan.clear();
 	}
@@ -140,14 +135,9 @@ public class TMan extends Spray {
 	@Override
 	public IPeerSampling clone() {
 		TMan tmanClone = new TMan();
-		try {
-			tmanClone.partialView = (SprayPartialView) this.partialView.clone();
-			tmanClone.register = (MergingRegister) this.register.clone();
-			tmanClone.partialViewTMan = (TManPartialView) this.partialViewTMan.clone();
-			tmanClone.descriptor = Descriptor.get();
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-		}
+		tmanClone.partialViewTMan = (TManPartialView) this.partialViewTMan.clone();
+		tmanClone.descriptor = Descriptor.get(); // (TODO) change this
+		tmanClone.rps = this.rps;
 		return tmanClone;
 	}
 
@@ -158,15 +148,29 @@ public class TMan extends Spray {
 	 *            Potential neighbor
 	 * @return True if the peer is added, false otherwise
 	 */
-	public boolean addNeighborTMan(Node peer) {
+	public boolean addNeighbor(Node peer) {
 		if (!this.node.equals(peer)) {
 			List<Node> sample = new ArrayList<Node>();
 			sample.add(peer);
-			this.partialViewTMan.merge(this, this.node, sample, this.partialView.size());
+			this.partialViewTMan.merge(this, this.node, sample,
+					((IPeerSampling) this.node.getProtocol(this.rps)).getPeers().size());
 			return this.partialViewTMan.contains(peer);
 		} else {
 			return false;
 		}
+	}
+
+	public List<Node> getPeers(int k) {
+		return this.partialViewTMan.getPeers(k);
+	}
+
+	public List<Node> getPeers() {
+		return this.partialViewTMan.getPeers();
+	}
+
+	@Override
+	protected boolean pFail(List<Node> path) {
+		return false;
 	}
 
 }

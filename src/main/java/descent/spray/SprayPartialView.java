@@ -74,12 +74,9 @@ public class SprayPartialView extends AAgingPartialView {
 
 	public void mergeSample(Node caller, Node neighbor, List<Node> newSample, List<Node> oldSample,
 			boolean isInitiator) {
-		ArrayList<Node> oldSampleInitial = (ArrayList<Node>) replace(oldSample, caller, neighbor); // opposite
-																									// transformation
-																									// of
-																									// the
-																									// getSample
 
+		// opposite transformation of the getSample
+		ArrayList<Node> oldSampleInitial = (ArrayList<Node>) replace(oldSample, caller, neighbor);
 		// #A remove the original sample
 		for (Node toRemoveNeighbor : oldSampleInitial) {
 			this.removeNode(toRemoveNeighbor);

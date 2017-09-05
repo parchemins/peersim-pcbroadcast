@@ -18,7 +18,7 @@ public class PartialView implements IPartialView {
 	}
 
 	public List<Node> getPeers() {
-		return (List<Node>) this.partialView.clone();
+		return new ArrayList<Node>(this.partialView);
 	}
 
 	public List<Node> getPeers(int k) {

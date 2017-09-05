@@ -1,6 +1,7 @@
 package descent.slicer;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import descent.merging.MergingRegister;
 import descent.rps.IPeerSampling;
@@ -22,6 +23,8 @@ public class Slicer extends TMan {
 	private static final String PAR_X = "x";
 	protected static Double X = 3.;
 
+	private Integer age = 0;
+
 	public Stamp stamp;
 	public boolean isWriter = false;
 
@@ -38,7 +41,8 @@ public class Slicer extends TMan {
 
 	@Override
 	public void onSubscription(Node origin) {
-		if (this.partialView.size() == 0) {
+
+		if (((IPeerSampling) this.node.getProtocol(this.rps)).getPeers().isEmpty()) {
 			((RankDescriptor) this.descriptor).setRank(0);
 			this.stamp = new Stamp();
 			this.isWriter = true;
@@ -48,6 +52,7 @@ public class Slicer extends TMan {
 	}
 
 	public void periodicCall() {
+		this.age += 1;
 		if (CommonState.getTime() == 100) {
 			// (TODO) create a controller doing that
 			Double rn = Math.abs(CommonState.r.nextGaussian()) * 5.;
@@ -55,15 +60,17 @@ public class Slicer extends TMan {
 		}
 
 		// #1 initialize descriptor based on Spray
-		if (this.age >= Math.max(this.partialView.size() / this.A, 6) && !((RankDescriptor) this.descriptor).isSet()) {
-			((RankDescriptor) this.descriptor).setRank((int) Math.floor(this.partialView.size() / this.A));
+		List<Node> randomNeighbors = ((IPeerSampling) this.node.getProtocol(this.rps)).getPeers();
+
+		if (this.age >= Math.max(randomNeighbors.size(), 6) && !((RankDescriptor) this.descriptor).isSet()) {
+			((RankDescriptor) this.descriptor).setRank((int) Math.floor(randomNeighbors.size()));
 		}
 
 		// #2 see if a swap of rank is needed
 		// (TODO) move this to be more generic, i.e. should not be in slicer
 		if (Slicer.SWAP) {
 			ArrayList<Node> toExamine = new ArrayList<Node>(this.partialViewTMan);
-			toExamine.addAll(this.partialView.getPeers());
+			toExamine.addAll(randomNeighbors);
 
 			// #A farthest frequency
 			RankDescriptor thisDescriptor = (RankDescriptor) this.descriptor;
@@ -98,10 +105,10 @@ public class Slicer extends TMan {
 		super.periodicCall();
 
 		// #4 getting a stamp
-		if (((RankDescriptor) this.descriptor).rank <= this.partialView.size() / X) {
+		if (((RankDescriptor) this.descriptor).rank <= randomNeighbors.size() / Slicer.X) {
 			boolean found = false;
 			ArrayList<Node> candidates = new ArrayList<Node>(this.partialViewTMan);
-			candidates.addAll(this.partialView.getPeers());
+			candidates.addAll(randomNeighbors);
 			Integer i = 0;
 			while (!found && i < candidates.size()) {
 				Node node = candidates.get(i);
@@ -118,14 +125,8 @@ public class Slicer extends TMan {
 	@Override
 	public IPeerSampling clone() {
 		TMan slicerClone = new Slicer();
-		try {
-			slicerClone.partialView = (SprayPartialView) this.partialView.clone();
-			slicerClone.register = (MergingRegister) this.register.clone();
-			slicerClone.partialViewTMan = (TManPartialView) this.partialViewTMan.clone();
-			slicerClone.descriptor = new RankDescriptor();
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-		}
+		slicerClone.partialViewTMan = (TManPartialView) this.partialViewTMan.clone();
+		slicerClone.descriptor = new RankDescriptor();
 		return slicerClone;
 	}
 

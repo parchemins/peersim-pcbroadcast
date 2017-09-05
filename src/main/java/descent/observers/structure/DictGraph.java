@@ -1533,7 +1533,7 @@ public class DictGraph {
 	 *            The number of tries
 	 * @return
 	 */
-	public Double findOneAmongAllWriter(Integer N) {
+/*	public Double findOneAmongAllWriter(Integer N) {
 
 		// JUST A TEST WHERE ONLY ONE PEER IS A WRITER
 		for (int i = 0; i < CDynamicNetwork.networks.get(0).size(); ++i) {
@@ -1561,7 +1561,7 @@ public class DictGraph {
 
 			while (!currentDescriptor.rank.equals(0) && hop < N * 10) {
 				// get a peer from the random peer sampling protocol
-				Node next = currentSlicer.partialView.getPeers(1).get(0);
+				Node next = current.partialView.getPeers(1).get(0);
 				currentSlicer = (Slicer) next.getProtocol(Slicer.pid);
 				currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
 				++hop;
@@ -1577,7 +1577,7 @@ public class DictGraph {
 
 		return (sum / (double) times);
 
-	}
+	}*/
 
 	/**
 	 * Count the number of hop in average to get to a writer.

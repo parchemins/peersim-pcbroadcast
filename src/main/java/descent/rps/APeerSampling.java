@@ -44,11 +44,9 @@ public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, I
 		APeerSampling.delta = Configuration.getInt(prefix + "." + APeerSampling.PAR_DELTA);
 		APeerSampling.start = Configuration.getInt(prefix + "." + APeerSampling.PAR_START);
 		APeerSampling.fail = Configuration.getDouble(prefix + "." + APeerSampling.PAR_FAIL, 0.0);
-		// this.costs = new int[(int)CommonState.getEndTime()];
 	}
 
 	public APeerSampling() {
-		// this.costs = new int[(int)CommonState.getEndTime()];
 	}
 
 	// must be implemented in the child class
@@ -135,10 +133,6 @@ public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, I
 		}
 		return result;
 	}
-
-	// public final int[] generatedPeerSamplingCost() {
-	// return this.costs;
-	// }
 
 	public void pack() {
 	}

@@ -165,10 +165,6 @@ public class Spray extends APeerSampling {
 		this.partialView.clear();
 	}
 
-	public List<Node> getPeers(int k) {
-		return this.partialView.getPeers(k);
-	}
-
 	@Override
 	public IPeerSampling clone() {
 		try {
@@ -224,5 +220,13 @@ public class Spray extends APeerSampling {
 			Node toDouble = this.partialView.getLowestOcc();
 			this.partialView.addNeighbor(toDouble);
 		}
+	}
+
+	public List<Node> getPeers(int k) {
+		return this.partialView.getPeers(k);
+	}
+
+	public List<Node> getPeers() {
+		return this.partialView.getPeers();
 	}
 }

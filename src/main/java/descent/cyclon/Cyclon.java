@@ -175,4 +175,8 @@ public class Cyclon extends APeerSampling {
 		return this.partialView.addNeighbor(peer);
 	}
 
+	public List<Node> getPeers() {
+		return this.partialView.getPeers();
+	}
+
 }

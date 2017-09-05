@@ -5,8 +5,7 @@ import java.util.List;
 
 import peersim.core.Node;
 
-public abstract class AAgingPartialView extends PartialView implements
-		IAgingPartialView {
+public abstract class AAgingPartialView extends PartialView implements IAgingPartialView {
 
 	protected ArrayList<Integer> ages;
 
@@ -16,17 +15,15 @@ public abstract class AAgingPartialView extends PartialView implements
 	}
 
 	public void incrementAge() {
-		for (Integer age : this.ages) {
+		for (Integer age : this.ages)
 			++age;
-		}
 	}
 
 	public Node getOldest() {
 		return this.partialView.get(0);
 	}
 
-	public abstract List<Node> getSample(Node caller, Node neighbor,
-			boolean isInitiator);
+	public abstract List<Node> getSample(Node caller, Node neighbor, boolean isInitiator);
 
 	@Override
 	public boolean removeNode(Node peer) {
@@ -55,8 +52,8 @@ public abstract class AAgingPartialView extends PartialView implements
 		return found;
 	}
 
-	public abstract void mergeSample(Node me, Node other, List<Node> newSample,
-			List<Node> oldSample, boolean isInitiator);
+	public abstract void mergeSample(Node me, Node other, List<Node> newSample, List<Node> oldSample,
+			boolean isInitiator);
 
 	@Override
 	public abstract boolean addNeighbor(Node peer);
