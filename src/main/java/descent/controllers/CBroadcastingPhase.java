@@ -1,7 +1,11 @@
 package descent.controllers;
 
+import descent.causalbroadcast.rps.RPSCBProtocol;
 import peersim.config.Configuration;
+import peersim.core.CommonState;
 import peersim.core.Control;
+import peersim.core.Network;
+import peersim.core.Node;
 
 /**
  * Trigger a phase of broadcasting where peers emit messages. Messages must
@@ -9,19 +13,21 @@ import peersim.core.Control;
  */
 public class CBroadcastingPhase implements Control {
 
-	private static final String PAR_MESSAGES = "messages";
-	private Integer nbMessages = 0;
-	private Integer[][] latency;
+	// probability to create a message at each step per peer
+	private static final String PAR_MESSAGES = "pmessage";
+	private Double pMessage = 0.;
 
 	public CBroadcastingPhase(String options) {
-		this.nbMessages = Configuration.getInt(options + "." + CBroadcastingPhase.PAR_MESSAGES, 0);
+		this.pMessage = Configuration.getDouble(options + "." + CBroadcastingPhase.PAR_MESSAGES, 0.);
 	}
 
 	public boolean execute() {
-		// (TODO) create an timeline of events
-		for (int i = 0; i < nbMessages; ++i) {
-			// #1 choose a peer
-			// #2 emit
+		for (int i = 0; i < Network.size(); ++i) {
+			Node n = Network.get(CommonState.r.nextInt(Network.size()));
+			if (CommonState.r.nextDouble() < pMessage) {
+				RPSCBProtocol rpscb = (RPSCBProtocol) n.getProtocol(RPSCBProtocol.pid);
+				rpscb.cb.app.send(null);
+			}
 		}
 		return false;
 	}

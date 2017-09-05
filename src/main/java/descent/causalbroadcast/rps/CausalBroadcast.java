@@ -23,7 +23,7 @@ public class CausalBroadcast implements IBroadcast {
 	private final Node p; // The identifier of the peer
 	private PartialView partialView; // The partial view
 	private HashMap<Node, List<AMBroadcast>> buffers; // Buffering messages
-	private IApplication app;
+	public IApplication app;
 
 	public CausalBroadcast(Node p, PartialView partialView, IApplication app) {
 		this.p = p;

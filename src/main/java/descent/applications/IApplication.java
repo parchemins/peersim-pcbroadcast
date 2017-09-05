@@ -11,4 +11,12 @@ public interface IApplication {
 	 *            The delivered message.
 	 */
 	public void deliver(Object message);
+
+	/**
+	 * Send a message to the whole network other applications.
+	 * 
+	 * @param message
+	 *            The message to send.
+	 */
+	public void send(Object message);
 }

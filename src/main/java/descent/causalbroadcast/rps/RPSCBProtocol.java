@@ -16,7 +16,7 @@ public class RPSCBProtocol extends Spray implements EDProtocol {
 
 	public RPSCBProtocol(String n) {
 		super(n);
-		this.cb = new CausalBroadcast(this.node, this.partialView, new DummyApp());
+		this.cb = new CausalBroadcast(this.node, this.partialView, new DummyApp(this.cb));
 	}
 
 	/**
