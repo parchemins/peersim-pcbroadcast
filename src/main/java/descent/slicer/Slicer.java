@@ -69,7 +69,7 @@ public class Slicer extends TMan {
 		// #2 see if a swap of rank is needed
 		// (TODO) move this to be more generic, i.e. should not be in slicer
 		if (Slicer.SWAP) {
-			ArrayList<Node> toExamine = new ArrayList<Node>(this.partialViewTMan);
+			ArrayList<Node> toExamine = new ArrayList<Node>(this.partialView);
 			toExamine.addAll(randomNeighbors);
 
 			// #A farthest frequency
@@ -107,7 +107,7 @@ public class Slicer extends TMan {
 		// #4 getting a stamp
 		if (((RankDescriptor) this.descriptor).rank <= randomNeighbors.size() / Slicer.X) {
 			boolean found = false;
-			ArrayList<Node> candidates = new ArrayList<Node>(this.partialViewTMan);
+			ArrayList<Node> candidates = new ArrayList<Node>(this.partialView);
 			candidates.addAll(randomNeighbors);
 			Integer i = 0;
 			while (!found && i < candidates.size()) {
@@ -125,7 +125,7 @@ public class Slicer extends TMan {
 	@Override
 	public IPeerSampling clone() {
 		TMan slicerClone = new Slicer();
-		slicerClone.partialViewTMan = (TManPartialView) this.partialViewTMan.clone();
+		slicerClone.partialView = (TManPartialView) this.partialView.clone();
 		slicerClone.descriptor = new RankDescriptor();
 		return slicerClone;
 	}

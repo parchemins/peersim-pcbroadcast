@@ -1,5 +1,5 @@
 # network size
-SIZE 10000
+SIZE 1000
 
 # parameters of periodic execution
 CYCLES 100
@@ -10,16 +10,21 @@ simulation.endtime CYCLES
 simulation.logtime 1
 
 ################### protocols ===========================
-protocol.link peersim.core.IdleProtocol
-
-protocol.rps descent.tman.TMan
+protocol.rps descent.spray.Spray
+protocol.rps.protocol rps
 protocol.rps.delta 1
 protocol.rps.step 1
 protocol.rps.start 1
-protocol.rps.linkable link
 
-control.o1 descent.controllers.DynamicNetwork
-control.o1.protocol rps
+protocol.ps descent.tman.TMan
+protocol.ps.protocol ps
+protocol.ps.rps rps
+protocol.ps.delta 1
+protocol.ps.step 1
+protocol.ps.start 1
+
+control.o1 descent.controllers.CDynamicNetwork
+control.o1.protocols rps ps
 control.o1.FINAL
 control.o1.step 1
 control.o1.addingPerStep 200
@@ -27,7 +32,7 @@ control.o1.addingPerStep 200
 control.o1.startAdd 0
 control.o1.endAdd 50
 
-control.o2 descent.controllers.ScrambleDescriptors
+control.o2 descent.controllers.CScrambleDescriptors
 control.o2.step 1
 control.o2.date 60
 
@@ -40,8 +45,8 @@ init.sch.randstart
 ##### Controls #####
 
 
-control.0 descent.observers.Observer
+control.0 descent.observers.structure.Observer
 control.0.program descent.observers.PDistance
-control.0.protocol rps
+control.0.protocol ps
 control.0.FINAL
 control.0.step 1

@@ -13,7 +13,7 @@ public class TManMessage implements IMessage {
 		this.sample = sample;
 	}
 
-	public Object getPayload() {
+	public List<Node> getPayload() {
 		return this.sample;
 	}
 

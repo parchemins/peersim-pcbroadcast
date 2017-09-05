@@ -13,13 +13,11 @@ import peersim.core.Node;
 public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, IPeerSampling {
 
 	// #A the names of the parameters in the configuration file of peersim
-	public static final String PAR_PROT = "rps"; // name of the protocol
 	private static final String PAR_DELTA = "delta"; // frequency of cyclic call
 	private static final String PAR_START = "start"; // start the cyclic call
 	private static final String PAR_FAIL = "fail"; // proba of fail of each peer
 
 	// #B the values from the configuration file of peersim
-	public static int pid;
 	private static int delta;
 	private static int start;
 	protected static double fail;
@@ -29,18 +27,12 @@ public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, I
 	protected Node node = null;
 
 	/**
-	 * The outbound costs per each step
-	 */
-	// private final int[] costs;
-
-	/**
 	 * Constructor of the class
 	 * 
 	 * @param prefix
 	 *            configuration of peersim
 	 */
 	public APeerSampling(String prefix) {
-		APeerSampling.pid = Configuration.lookupPid(APeerSampling.PAR_PROT);
 		APeerSampling.delta = Configuration.getInt(prefix + "." + APeerSampling.PAR_DELTA);
 		APeerSampling.start = Configuration.getInt(prefix + "." + APeerSampling.PAR_START);
 		APeerSampling.fail = Configuration.getDouble(prefix + "." + APeerSampling.PAR_FAIL, 0.0);

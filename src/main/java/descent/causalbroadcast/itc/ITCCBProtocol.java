@@ -187,7 +187,7 @@ public class ITCCBProtocol extends TMan {
 	public IPeerSampling clone() {
 		ITCCBProtocol imClone = new ITCCBProtocol();
 		try {
-			imClone.partialViewTMan = (TManPartialView) this.partialViewTMan.clone();
+			imClone.partialView = (TManPartialView) this.partialView.clone();
 			imClone.descriptor = new ITCCBDescriptor();
 			((ITCCBDescriptor) imClone.descriptor).setId(((ITCCBDescriptor) this.descriptor).id);
 			imClone.ct = (CausalityTracker) this.ct.clone();

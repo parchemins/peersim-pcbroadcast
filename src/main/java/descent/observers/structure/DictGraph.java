@@ -25,6 +25,7 @@ import descent.spray.Spray;
 import descent.tman.Descriptor;
 import descent.tman.TMan;
 import peersim.core.CommonState;
+import peersim.core.IdleProtocol;
 import peersim.core.Network;
 import peersim.core.Node;
 
@@ -533,11 +534,11 @@ public class DictGraph {
 		}
 	}
 
-	public DeliveryRateAndMsg deliveryRate(Function<Integer, Integer> howMany, Integer N) {
+	public DeliveryRateAndMsg deliveryRate(Function<Integer, Integer> howMany, Integer N, int pid) {
 		double sumOfResult = 0;
 		ArrayList<Long> upNode = new ArrayList<Long>();
 		for (Integer i = 0; i < CDynamicNetwork.graph.size(); ++i) {
-			APeerSampling rps = (APeerSampling) CDynamicNetwork.graph.get(i).getProtocol(APeerSampling.pid);
+			APeerSampling rps = (APeerSampling) CDynamicNetwork.graph.get(i).getProtocol(pid);
 			if (rps.isUp()) {
 				upNode.add(CDynamicNetwork.graph.get(i).getID());
 			}
@@ -625,7 +626,7 @@ public class DictGraph {
 			}
 		}
 
-		// ====== #2 put the numers in a list ======
+		// ====== #2 put the numbers in a list ======
 		List<Integer> degs = new ArrayList<Integer>(lookup.size());
 		for (int deg : lookup.values()) {
 			degs.add(deg);
@@ -1064,7 +1065,7 @@ public class DictGraph {
 			Slicer slicerFrom = (Slicer) Network.get(i).getProtocol(Slicer.pid);
 			RankDescriptor descriptorFrom = (RankDescriptor) slicerFrom.descriptor;
 
-			for (Node neighbor : slicerFrom.partialViewTMan) {
+			for (Node neighbor : slicerFrom.partialView) {
 				Slicer slicerTo = (Slicer) neighbor.getProtocol(Slicer.pid);
 				RankDescriptor descriptorTo = (RankDescriptor) slicerTo.descriptor;
 
@@ -1411,9 +1412,12 @@ public class DictGraph {
 
 		for (int i = 0; i < Network.size(); ++i) {
 			Node n = Network.get(i);
+
 			TMan nTMan = (TMan) n.getProtocol(TMan.pid);
-			for (Node neighbor : nTMan.partialViewTMan) {
+
+			for (Node neighbor : nTMan.partialView) {
 				TMan neighborTMan = (TMan) neighbor.getProtocol(TMan.pid);
+
 				Double distance = nTMan.descriptor.ranking(neighborTMan.descriptor);
 				if (min > distance) {
 					min = distance;
@@ -1465,7 +1469,7 @@ public class DictGraph {
 			Node n = Network.get(i);
 			TMan nTMan = (TMan) n.getProtocol(TMan.pid);
 
-			for (Node neighbor : nTMan.partialViewTMan) {
+			for (Node neighbor : nTMan.partialView) {
 				TMan neighborTMan = (TMan) neighbor.getProtocol(TMan.pid);
 				Double distance = nTMan.descriptor.ranking(neighborTMan.descriptor);
 
@@ -1533,51 +1537,41 @@ public class DictGraph {
 	 *            The number of tries
 	 * @return
 	 */
-/*	public Double findOneAmongAllWriter(Integer N) {
-
-		// JUST A TEST WHERE ONLY ONE PEER IS A WRITER
-		for (int i = 0; i < CDynamicNetwork.networks.get(0).size(); ++i) {
-			Node node = CDynamicNetwork.networks.get(0).get(i);
-			Slicer slicer = (Slicer) node.getProtocol(Slicer.pid);
-			RankDescriptor descriptor = (RankDescriptor) slicer.descriptor;
-			descriptor.rank = 1;
-		}
-
-		Integer times = 0;
-		Integer sum = 0;
-		for (int i = 0; i < N; ++i) {
-			// set only one writer (rank = 0)
-			Node node = CDynamicNetwork.networks.get(0)
-					.get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
-			Slicer slicer = (Slicer) node.getProtocol(Spray.pid);
-			RankDescriptor descriptor = (RankDescriptor) slicer.descriptor;
-			descriptor.rank = 0;
-
-			Integer hop = 0;
-			Node current = CDynamicNetwork.networks.get(0)
-					.get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
-			Slicer currentSlicer = (Slicer) current.getProtocol(Slicer.pid);
-			RankDescriptor currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
-
-			while (!currentDescriptor.rank.equals(0) && hop < N * 10) {
-				// get a peer from the random peer sampling protocol
-				Node next = current.partialView.getPeers(1).get(0);
-				currentSlicer = (Slicer) next.getProtocol(Slicer.pid);
-				currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
-				++hop;
-			}
-
-			if (hop < N * 10) {
-				sum += hop;
-				++times;
-			}
-
-			descriptor.rank = 1;
-		}
-
-		return (sum / (double) times);
-
-	}*/
+	/*
+	 * public Double findOneAmongAllWriter(Integer N) {
+	 * 
+	 * // JUST A TEST WHERE ONLY ONE PEER IS A WRITER for (int i = 0; i <
+	 * CDynamicNetwork.networks.get(0).size(); ++i) { Node node =
+	 * CDynamicNetwork.networks.get(0).get(i); Slicer slicer = (Slicer)
+	 * node.getProtocol(Slicer.pid); RankDescriptor descriptor =
+	 * (RankDescriptor) slicer.descriptor; descriptor.rank = 1; }
+	 * 
+	 * Integer times = 0; Integer sum = 0; for (int i = 0; i < N; ++i) { // set
+	 * only one writer (rank = 0) Node node = CDynamicNetwork.networks.get(0)
+	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
+	 * Slicer slicer = (Slicer) node.getProtocol(Spray.pid); RankDescriptor
+	 * descriptor = (RankDescriptor) slicer.descriptor; descriptor.rank = 0;
+	 * 
+	 * Integer hop = 0; Node current = CDynamicNetwork.networks.get(0)
+	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
+	 * Slicer currentSlicer = (Slicer) current.getProtocol(Slicer.pid);
+	 * RankDescriptor currentDescriptor = (RankDescriptor)
+	 * currentSlicer.descriptor;
+	 * 
+	 * while (!currentDescriptor.rank.equals(0) && hop < N * 10) { // get a peer
+	 * from the random peer sampling protocol Node next =
+	 * current.partialView.getPeers(1).get(0); currentSlicer = (Slicer)
+	 * next.getProtocol(Slicer.pid); currentDescriptor = (RankDescriptor)
+	 * currentSlicer.descriptor; ++hop; }
+	 * 
+	 * if (hop < N * 10) { sum += hop; ++times; }
+	 * 
+	 * descriptor.rank = 1; }
+	 * 
+	 * return (sum / (double) times);
+	 * 
+	 * }
+	 */
 
 	/**
 	 * Count the number of hop in average to get to a writer.

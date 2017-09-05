@@ -2,6 +2,7 @@ package descent.spray;
 
 import java.util.List;
 
+import descent.controllers.CDynamicNetwork;
 import descent.merging.MergingRegister;
 import descent.rps.APeerSampling;
 import descent.rps.IMessage;
@@ -24,6 +25,9 @@ public class Spray extends APeerSampling {
 	private static final String PAR_B = "b";
 	protected Double B = 0.;
 
+	private static final String PAR_PROTOCOL = "protocol";
+	public static int pid;
+
 	// #B Local variables
 	public SprayPartialView partialView;
 
@@ -34,6 +38,7 @@ public class Spray extends APeerSampling {
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
 
+		Spray.pid = Configuration.getPid(prefix + "." + Spray.PAR_PROTOCOL);
 		this.A = Configuration.getDouble(prefix + "." + Spray.PAR_A, 1.);
 		this.B = Configuration.getDouble(prefix + "." + Spray.PAR_B, 0.);
 	}

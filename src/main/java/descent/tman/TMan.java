@@ -18,25 +18,28 @@ public class TMan extends APeerSampling {
 
 	// #A Configuration from peersim
 	private final static String PAR_RPS = "rps";
-	protected int rps;
+	protected static int rps;
+	private static final String PAR_PROTOCOL = "protocol";
+	public static int pid;
 
 	// #B Local variables
-	public TManPartialView partialViewTMan;
+	public TManPartialView partialView;
 	public IDescriptor descriptor;
 
 	private boolean shuffleUsingRPS = false;
 
 	public TMan(String prefix) {
 		super(prefix);
-		this.partialViewTMan = new TManPartialView();
+		this.partialView = new TManPartialView();
 		this.descriptor = Descriptor.get();
 
-		this.rps = Configuration.getPid(prefix + "." + TMan.PAR_RPS);
+		TMan.pid = Configuration.getPid(prefix + "." + TMan.PAR_PROTOCOL);
+		TMan.rps = Configuration.getPid(prefix + "." + TMan.PAR_RPS);
 	}
 
 	public TMan() {
 		super();
-		this.partialViewTMan = new TManPartialView();
+		this.partialView = new TManPartialView();
 		this.descriptor = Descriptor.get();
 	}
 
@@ -47,13 +50,13 @@ public class TMan extends APeerSampling {
 		this.shuffleUsingRPS = !this.shuffleUsingRPS;
 
 		// #1 Choose a neighbor to exchange with
-		List<Node> randomNeighbors = ((IPeerSampling) this.node.getProtocol(this.rps)).getPeers();
+		List<Node> randomNeighbors = ((IPeerSampling) this.node.getProtocol(TMan.rps)).getPeers();
 
 		Node q = null;
 		TMan qTMan = null;
-		if (this.partialViewTMan.size() > 0 && !this.shuffleUsingRPS) {
+		if (this.partialView.size() > 0 && !this.shuffleUsingRPS) {
 			// #A from tman's partial view
-			q = this.partialViewTMan.getRandom();
+			q = this.partialView.getRandom();
 		} else if (randomNeighbors.size() > 0) {
 			// #B from rps' partial view
 			q = randomNeighbors.get(CommonState.r.nextInt(randomNeighbors.size()));
@@ -61,16 +64,16 @@ public class TMan extends APeerSampling {
 		}
 		qTMan = (TMan) q.getProtocol(TMan.pid);
 		if (!qTMan.isUp) {
-			this.partialViewTMan.remove(q);
+			this.partialView.remove(q);
 			return;
 		}
 
 		// #2 Prepare a sample
-		List<Node> sample = this.partialViewTMan.getSample(this.node, q, randomNeighbors,
+		List<Node> sample = this.partialView.getSample(this.node, q, randomNeighbors,
 				Math.floor(randomNeighbors.size() / 2));
-		IMessage result = qTMan.onPeriodicCall(this.node, new TManMessage(sample));
+		TManMessage result = qTMan.onPeriodicCall(this.node, new TManMessage(sample));
 		// #3 Integrate remote sample if it fits better
-		this.partialViewTMan.merge(this, this.node, (List<Node>) result.getPayload(), randomNeighbors.size());
+		this.partialView.merge(this, this.node, result.getPayload(), randomNeighbors.size());
 	}
 
 	/**
@@ -82,19 +85,19 @@ public class TMan extends APeerSampling {
 	 *            The message containing descriptors of neighbors
 	 * @return The response of the receiving peer to the origin
 	 */
-	public IMessage onPeriodicCall(Node origin, IMessage message) {
-		List<Node> randomNeighbors = ((IPeerSampling) this.node.getProtocol(this.rps)).getPeers();
+	public TManMessage onPeriodicCall(Node origin, IMessage message) {
+		List<Node> randomNeighbors = ((IPeerSampling) this.node.getProtocol(TMan.rps)).getPeers();
 		// #1 prepare a sample
-		List<Node> sample = this.partialViewTMan.getSample(this.node, origin, randomNeighbors,
+		List<Node> sample = this.partialView.getSample(this.node, origin, randomNeighbors,
 				Math.floor(randomNeighbors.size() / 2));
 		// #2 merge the received sample
-		this.partialViewTMan.merge(this, this.node, (List<Node>) message.getPayload(), randomNeighbors.size());
+		this.partialView.merge(this, this.node, ((TManMessage) message).getPayload(), randomNeighbors.size());
 		// #3 send the prepared sample to origin
 		return new TManMessage(sample);
 	}
 
 	public void join(Node joiner, Node contact) {
-		this.partialViewTMan.clear();
+		this.partialView.clear();
 
 		if (this.node == null)
 			this.node = joiner;
@@ -129,15 +132,14 @@ public class TMan extends APeerSampling {
 
 	public void leave() {
 		this.isUp = false;
-		this.partialViewTMan.clear();
+		this.partialView.clear();
 	}
 
 	@Override
 	public IPeerSampling clone() {
 		TMan tmanClone = new TMan();
-		tmanClone.partialViewTMan = (TManPartialView) this.partialViewTMan.clone();
+		tmanClone.partialView = (TManPartialView) this.partialView.clone();
 		tmanClone.descriptor = Descriptor.get(); // (TODO) change this
-		tmanClone.rps = this.rps;
 		return tmanClone;
 	}
 
@@ -152,20 +154,20 @@ public class TMan extends APeerSampling {
 		if (!this.node.equals(peer)) {
 			List<Node> sample = new ArrayList<Node>();
 			sample.add(peer);
-			this.partialViewTMan.merge(this, this.node, sample,
-					((IPeerSampling) this.node.getProtocol(this.rps)).getPeers().size());
-			return this.partialViewTMan.contains(peer);
+			this.partialView.merge(this, this.node, sample,
+					((IPeerSampling) this.node.getProtocol(TMan.rps)).getPeers().size());
+			return this.partialView.contains(peer);
 		} else {
 			return false;
 		}
 	}
 
 	public List<Node> getPeers(int k) {
-		return this.partialViewTMan.getPeers(k);
+		return this.partialView.getPeers(k);
 	}
 
 	public List<Node> getPeers() {
-		return this.partialViewTMan.getPeers();
+		return this.partialView.getPeers();
 	}
 
 	@Override

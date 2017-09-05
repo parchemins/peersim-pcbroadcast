@@ -18,18 +18,20 @@ public class Cyclon extends APeerSampling {
 
 	// #A the names of the parameters in the configuration file of peersim
 	private static final String PAR_C = "c"; // max partial view size
-	private static final String PAR_L = "l"; // shuffle size
-	private static final String PAR_RANDOM_WALK = "random_walk"; // random walk
-																	// of first
-																	// connexions
-
-	// #B the values from the configuration file of peersim
 	private static int c;
+
+	private static final String PAR_L = "l"; // shuffle size
 	private static int l;
 
-	// #C local variables
-	private CyclonPartialView partialView;
+	// random walk of first connections
+	private static final String PAR_RANDOM_WALK = "random_walk";
 	private static int RND_WALK = 5;
+
+	private static final String PAR_PROTOCOL = "protocol";
+	private static int pid;
+
+	// #B local variables
+	private CyclonPartialView partialView;
 
 	/**
 	 * Construction of a Cyclon instance
@@ -42,6 +44,8 @@ public class Cyclon extends APeerSampling {
 		Cyclon.c = Configuration.getInt(prefix + "." + PAR_C);
 		Cyclon.l = Configuration.getInt(prefix + "." + PAR_L);
 		Cyclon.RND_WALK = Configuration.getInt(prefix + "." + PAR_RANDOM_WALK);
+		Cyclon.pid = Configuration.getPid(prefix + "." + PAR_PROTOCOL);
+
 		this.partialView = new CyclonPartialView(Cyclon.c, Cyclon.l);
 	}
 

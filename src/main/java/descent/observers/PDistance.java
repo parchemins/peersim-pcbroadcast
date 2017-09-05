@@ -6,12 +6,13 @@ import java.util.HashMap;
 
 import descent.observers.structure.DictGraph;
 import descent.observers.structure.IObserverProgram;
+import peersim.core.Network;
 
 public class PDistance implements IObserverProgram {
 
 	public void tick(long currentTick, DictGraph observer) {
 		HashMap<Double, Integer> distribution = observer.getDistances(10);
-
+		
 		String output = "";
 
 		ArrayList<Double> keys = new ArrayList<Double>(distribution.keySet());
