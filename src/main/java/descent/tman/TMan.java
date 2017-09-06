@@ -51,7 +51,7 @@ public class TMan extends APeerSampling {
 
 		// #1 Choose a neighbor to exchange with
 		List<Node> randomNeighbors = ((IPeerSampling) this.node.getProtocol(TMan.rps)).getPeers();
-
+		
 		Node q = null;
 		TMan qTMan = null;
 		if (this.partialView.size() > 0 && !this.shuffleUsingRPS) {

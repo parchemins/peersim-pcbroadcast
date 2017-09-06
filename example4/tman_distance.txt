@@ -42,6 +42,10 @@ init.sch CDScheduler
 init.sch.protocol rps
 init.sch.randstart
 
+init.sch2 CDScheduler
+init.sch2.protocol ps
+init.sch2.randstart
+
 ##### Controls #####
 
 

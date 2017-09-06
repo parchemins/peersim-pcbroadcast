@@ -67,6 +67,7 @@ public class CDynamicNetwork implements Control {
 
 		this.PROTOCOLS = new ArrayList<Integer>();
 		for (int i = 0; i < pids.length; ++i) {
+			System.out.println(pids[i] + " => " + Configuration.lookupPid(pids[i]));
 			this.PROTOCOLS.add(new Integer(Configuration.lookupPid(pids[i])));
 		}
 
