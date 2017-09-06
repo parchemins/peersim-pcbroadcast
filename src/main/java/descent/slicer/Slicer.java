@@ -3,9 +3,7 @@ package descent.slicer;
 import java.util.ArrayList;
 import java.util.List;
 
-import descent.merging.MergingRegister;
 import descent.rps.IPeerSampling;
-import descent.spray.SprayPartialView;
 import descent.tman.TMan;
 import descent.tman.TManPartialView;
 import itc.Stamp;

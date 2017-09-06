@@ -66,10 +66,8 @@ public class CDynamicNetwork implements Control {
 		String[] pids = Configuration.getString(prefix + "." + CDynamicNetwork.PAR_PROTOCOLS).split(" ");
 
 		this.PROTOCOLS = new ArrayList<Integer>();
-		for (int i = 0; i < pids.length; ++i) {
-			System.out.println(pids[i] + " => " + Configuration.lookupPid(pids[i]));
+		for (int i = 0; i < pids.length; ++i)
 			this.PROTOCOLS.add(new Integer(Configuration.lookupPid(pids[i])));
-		}
 
 		final int nsize = Network.size();
 

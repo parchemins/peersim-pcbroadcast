@@ -9,6 +9,7 @@ import descent.applications.IApplication;
 import descent.causalbroadcast.AMBroadcast;
 import descent.causalbroadcast.IBroadcast;
 import descent.rps.IMessage;
+import descent.rps.IPeerSampling;
 import descent.rps.PartialView;
 import peersim.config.FastConfig;
 import peersim.core.Node;
@@ -21,13 +22,13 @@ import peersim.transport.Transport;
 public class CausalBroadcast implements IBroadcast {
 
 	private final Node p; // The identifier of the peer
-	private PartialView partialView; // The partial view
+	private IPeerSampling ps; // The peer sampling protocol
 	private HashMap<Node, List<AMBroadcast>> buffers; // Buffering messages
 	public IApplication app;
 
-	public CausalBroadcast(Node p, PartialView partialView, IApplication app) {
+	public CausalBroadcast(Node p, IPeerSampling peerSampling, IApplication app) {
 		this.p = p;
-		this.partialView = partialView;
+		this.ps = peerSampling;
 		this.buffers = new HashMap<Node, List<AMBroadcast>>();
 		this.app = app;
 	}
@@ -42,7 +43,7 @@ public class CausalBroadcast implements IBroadcast {
 	 *            The neighbor reached by the link.
 	 */
 	public void onChannelOpen(Node i, Node q) {
-		if (!i.equals(this.p) && this.partialView.size() - this.buffers.size() > 1 && !this.buffers.containsKey(q)) {
+		if (!i.equals(this.p) && this.ps.getPeers().size() - this.buffers.size() > 1 && !this.buffers.containsKey(q)) {
 			this.buffers.put(q, new ArrayList<AMBroadcast>());
 
 			this._broadcast(new MLockedBroadcast(VisibilityMatrix.get(this.p), this.p, q));
@@ -86,7 +87,7 @@ public class CausalBroadcast implements IBroadcast {
 	}
 
 	private void _broadcast(AMBroadcast message) {
-		for (Node q : new HashSet<Node>(partialView.getPeers()))
+		for (Node q : new HashSet<Node>(this.ps.getPeers()))
 			this.sendTo(q, message);
 	}
 
@@ -139,7 +140,7 @@ public class CausalBroadcast implements IBroadcast {
 
 	@Override
 	protected Object clone() throws CloneNotSupportedException {
-		CausalBroadcast cb = new CausalBroadcast(this.p, (PartialView) this.partialView.clone(), this.app);
+		CausalBroadcast cb = new CausalBroadcast(this.p, this.ps, this.app);
 		cb.buffers = (HashMap<Node, List<AMBroadcast>>) this.buffers.clone();
 		return cb;
 	}

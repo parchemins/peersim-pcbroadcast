@@ -14,14 +14,21 @@ simulation.endtime CYCLES*CYCLE
 simulation.logtime CYCLE
 
 ################### protocols ===========================
-protocol.link peersim.core.IdleProtocol
 
-protocol.rps descent.causalbroadcast.rps.RPSCBProtocol
+protocol.rps descent.spray.Spray
+protocol.rps.protocol rps
 protocol.rps.delta 1
 protocol.rps.step CYCLE
 protocol.rps.start 1
-protocol.rps.linkable link
-protocol.rps.transport urt
+
+
+protocol.bc descent.causalbroadcast.rps.RPSCBProtocol
+protocol.bc.protocol bc
+protocol.bc.delta 1
+protocol.bc.step 1
+protocol.bc.start 1
+protocol.bc.linkable rps
+protocol.bc.transport urt
 
 protocol.urt UniformRandomTransport
 protocol.urt.mindelay MINDELAY
