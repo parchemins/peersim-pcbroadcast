@@ -18,10 +18,10 @@ public class ReliableBroadcast implements EDProtocol, CDProtocol {
 	private static String PAR_PID = "pid";
 	private static int PID;
 
-	private VectorClock received;
+	protected VectorClock received;
 
 	private Integer counter = 0;
-	private Node node;
+	protected Node node;
 
 	public ReliableBroadcast(String prefix) {
 		this.PID = Configuration.getPid(prefix + "." + ReliableBroadcast.PAR_PID);
@@ -39,7 +39,7 @@ public class ReliableBroadcast implements EDProtocol, CDProtocol {
 	 * @param m
 	 *            The message to send.
 	 */
-	public void broadcast(IMessage m) { // b_p(m)
+	public void rBroadcast(IMessage m) { // b_p(m)
 		++this.counter;
 		MReliableBroadcast mrb = new MReliableBroadcast(this.node.getID(), this.counter, m);
 		this.received.add(mrb.id, mrb.counter);
@@ -95,7 +95,11 @@ public class ReliableBroadcast implements EDProtocol, CDProtocol {
 		this._setNode(node);
 	}
 
-	private void _setNode(Node n) {
+	/**
+	 * Lazy loading the node.
+	 * @param n The node hosting this protocol.
+	 */
+	protected void _setNode(Node n) {
 		if (this.node == null) {
 			this.node = n;
 		}
