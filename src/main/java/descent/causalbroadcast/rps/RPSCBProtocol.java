@@ -29,7 +29,7 @@ public class RPSCBProtocol implements EDProtocol, CDProtocol {
 
 	public RPSCBProtocol(String prefix) {
 		RPSCBProtocol.pid = Configuration.getPid(prefix +"."+ RPSCBProtocol.PAR_PROTOCOL);
-		RPSCBProtocol.pid = Configuration.getPid(prefix +"."+ RPSCBProtocol.PAR_PS);
+		RPSCBProtocol.ps = Configuration.getPid(prefix +"."+ RPSCBProtocol.PAR_PS);
 	}
 
 	public RPSCBProtocol() {
