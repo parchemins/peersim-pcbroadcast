@@ -1,18 +1,16 @@
 package descent.broadcast.reliable;
 
 import java.util.HashMap;
-import java.util.Map;
 
 /**
- * Vector clock associating id->counter.
- *
+ * Version vector with exceptions to deal with out of FIFO order messages.
  */
-public class VectorClock {
+public class VVwE {
 
-	private Map<Long, Integer> vector;
+	public HashMap<Long, VVwEEntry> received;
 
-	public VectorClock() {
-		this.vector = new HashMap<Long, Integer>();
+	public VVwE() {
+		this.received = new HashMap<Long, VVwEEntry>();
 	}
 
 	/**
@@ -24,11 +22,10 @@ public class VectorClock {
 	 *            The associated counter.
 	 */
 	public void add(Long id, Integer counter) {
-		if (!this.vector.containsKey(id)) {
-			this.vector.put(id, counter);
-		} else {
-			this.vector.put(id, Math.max(this.vector.get(id), counter));
+		if (!this.received.containsKey(id)) {
+			this.received.put(id, new VVwEEntry());
 		}
+		this.received.get(id).add(counter);
 	}
 
 	/**
@@ -42,15 +39,7 @@ public class VectorClock {
 	 *         otherwise.
 	 */
 	public boolean contains(Long id, Integer counter) {
-		return (this.vector.containsKey(id) && counter <= this.vector.get(id));
+		return this.received.containsKey(id) && this.received.get(id).contains(counter);
 	}
 
-	@Override
-	public VectorClock clone(){
-		VectorClock c = new VectorClock();
-		for (Long id : this.vector.keySet()) {
-			c.add(id, this.vector.get(id));
-		}
-		return c;
-	}
 }

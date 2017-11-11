@@ -1,10 +1,11 @@
 package descent.broadcast.causal.timestamp;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import descent.broadcast.reliable.MReliableBroadcast;
 import descent.broadcast.reliable.ReliableBroadcast;
-import descent.broadcast.reliable.VectorClock;
+import descent.broadcast.reliable.VVwE;
 import descent.rps.IMessage;
 
 /**
@@ -13,36 +14,63 @@ import descent.rps.IMessage;
  */
 public class TimestampCausalBroadcast extends ReliableBroadcast {
 
-	private static String PAR_PID = "pid";
-	private static int PID;
+	public HashSet<MTimestamp> buffer;
+	public VV vector;
 
-	private ArrayList<MReliableBroadcast> buffer;
-	
+	public Integer causalityCounter;
+
 	public TimestampCausalBroadcast(String prefix) {
 		super(prefix);
+		this.buffer = new HashSet<MTimestamp>();
+		this.vector = new VV();
+		this.causalityCounter = 0;
 	}
 
-	@Override
-	public void rBroadcast(IMessage m) {
-		// TODO Auto-generated method stub
-		super.rBroadcast(m);
+	public TimestampCausalBroadcast() {
+		super();
+		this.buffer = new HashSet<MTimestamp>();
+		this.vector = new VV();
+		this.causalityCounter = 0;
 	}
-	
+
 	/**
 	 * Broadcast a message with causal order metadata.
 	 * 
 	 * @param m
 	 */
 	public void cBroadcast(IMessage m) {
-		VectorClock vectorToSend = this.received.clone();
-		vectorToSend.add(this.node.getID(), this.counterbis);
-		MTCB mtcb = new MTCB(vectorToSend, m);
+		this.vector.add(this.node.getID(), this.causalityCounter);
+		MTCB mtcb = new MTCB(this.vector.clone(), m);
 		this.rBroadcast(mtcb);
 	}
 
 	@Override
 	public void rDeliver(IMessage m) {
-		// TODO Auto-generated method stub
-		super.rDeliver(m);
-	}	
+		if (m instanceof MTimestamp) {
+			this.buffer.add((MTimestamp) m);
+			this.checkBuffer();
+		}
+	}
+	
+	public void cDeliver(IMessage m) {
+		// nothing yet
+	}
+
+	/**
+	 * Checks if messages in buffer are ready. If so, deliver them.
+	 */
+	public void checkBuffer() {
+		for (MTimestamp mt : this.buffer) {
+			try {
+				if (this.vector.isReady(mt.stamp)) {
+					this.buffer.remove(mt);
+					this.vector.merge(mt.stamp);
+					this.cDeliver(mt.message);
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 }

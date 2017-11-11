@@ -1,6 +1,5 @@
 package descent.broadcast.causal.timestamp;
 
-import descent.broadcast.reliable.VectorClock;
 import descent.rps.IMessage;
 
 /**
@@ -9,10 +8,10 @@ import descent.rps.IMessage;
  */
 public class MTCB implements IMessage {
 
-	public final VectorClock vector;
+	public final VV vector;
 	private final IMessage message;
 
-	public MTCB(VectorClock vector, IMessage message) {
+	public MTCB(VV vector, IMessage message) {
 		this.vector = vector;
 		this.message = message;
 	}

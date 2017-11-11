@@ -15,22 +15,20 @@ import peersim.transport.Transport;
  */
 public class ReliableBroadcast implements EDProtocol, CDProtocol {
 
-	private static String PAR_PID = "pid";
-	private static int PID;
-
-	protected VectorClock received;
+	private final static String PAR_PID = "pid";
+	protected static Integer PID;
+	public VVwE received;
 
 	private Integer counter = 0;
 	protected Node node;
 
 	public ReliableBroadcast(String prefix) {
-		this.PID = Configuration.getPid(prefix + "." + ReliableBroadcast.PAR_PID);
-		// this.Q = Configuration.getPid(prefix + "." + ReliableBroadcast.PAR_Q);
-		this.received = new VectorClock();
+		ReliableBroadcast.PID = Configuration.getPid(prefix + "." + ReliableBroadcast.PAR_PID);
+		this.received = new VVwE();
 	}
 
 	public ReliableBroadcast() {
-		this.received = new VectorClock();
+		this.received = new VVwE();
 	}
 
 	/**
@@ -97,7 +95,9 @@ public class ReliableBroadcast implements EDProtocol, CDProtocol {
 
 	/**
 	 * Lazy loading the node.
-	 * @param n The node hosting this protocol.
+	 * 
+	 * @param n
+	 *            The node hosting this protocol.
 	 */
 	protected void _setNode(Node n) {
 		if (this.node == null) {
