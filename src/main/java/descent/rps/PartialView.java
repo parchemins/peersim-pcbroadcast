@@ -3,6 +3,9 @@ package descent.rps;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections4.Bag;
+import org.apache.commons.collections4.bag.HashBag;
+
 import peersim.core.CommonState;
 import peersim.core.Node;
 
@@ -11,50 +14,41 @@ import peersim.core.Node;
  */
 public class PartialView implements IPartialView {
 
-	public ArrayList<Node> partialView;
+	public Bag<Node> partialView;
 
 	public PartialView() {
-		this.partialView = new ArrayList<Node>();
+		this.partialView = new HashBag<Node>();
 	}
 
-	public List<Node> getPeers() {
-		return new ArrayList<Node>(this.partialView);
+	public Iterable<Node> getPeers() {
+		return new HashBag<Node>(this.partialView);
 	}
 
-	public List<Node> getPeers(int k) {
-		ArrayList<Node> sample = new ArrayList<Node>();
+	public Iterable<Node> getPeers(int k) {
 		if (this.partialView.size() == k || k == Integer.MAX_VALUE) {
-			sample = new ArrayList<Node>(this.partialView);
+			return this.getPeers();
 		} else {
-			sample = new ArrayList<Node>();
+			HashBag<Node> sample = new HashBag<Node>();
 			ArrayList<Node> clone = new ArrayList<Node>(this.partialView);
 			while (sample.size() < Math.min(k, this.partialView.size())) {
 				int rn = CommonState.r.nextInt(clone.size());
 				sample.add(clone.get(rn));
 				clone.remove(rn);
 			}
+			return sample;
 		}
-		return sample;
 	}
 
 	public boolean removeNode(Node peer) {
-		int index = this.getIndex(peer);
-		if (index >= 0) {
-			this.partialView.remove(index);
-		}
-		return index >= 0;
+		return this.partialView.remove(peer);
 	}
 
 	public boolean addNeighbor(Node peer) {
-		boolean isContaining = this.contains(peer);
-		if (!isContaining) {
-			this.partialView.add(peer);
-		}
-		return !isContaining;
+		return this.partialView.add(peer);
 	}
 
 	public boolean contains(Node peer) {
-		return this.getIndex(peer) >= 0;
+		return this.partialView.contains(peer);
 	}
 
 	public int size() {
@@ -65,24 +59,10 @@ public class PartialView implements IPartialView {
 		this.partialView.clear();
 	}
 
-	public int getIndex(Node neighbor) {
-		int i = 0;
-		int index = -1;
-		boolean found = false;
-		while (!found && i < this.partialView.size()) {
-			if (this.partialView.get(i).getID() == neighbor.getID()) {
-				found = true;
-				index = i;
-			}
-			++i;
-		}
-		return index;
-	}
-
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		PartialView pv = new PartialView();
-		pv.partialView = new ArrayList<Node>(this.partialView);
+		pv.partialView = new HashBag<Node>(this.partialView);
 		return pv;
 	}
 }

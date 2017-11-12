@@ -15,7 +15,7 @@ public interface IPartialView {
 	 * 
 	 * @return the reference to the list of neighbors
 	 */
-	public List<Node> getPeers();
+	public Iterable<Node> getPeers();
 
 	/**
 	 * Get a list of k neighbors. If the partial view is not big enough, it
@@ -25,7 +25,7 @@ public interface IPartialView {
 	 *            the number of requested neighbors
 	 * @return a new instance of the list of nodes
 	 */
-	public List<Node> getPeers(int k);
+	public Iterable<Node> getPeers(int k);
 
 	/**
 	 * Remove an occurrence of the peer from the neighborhood, if multiple
@@ -66,17 +66,4 @@ public interface IPartialView {
 	 * Remove all the elements contained in the partial view
 	 */
 	public void clear();
-
-	/**
-	 * Get the index in the partial view of the neighbor in argument. If
-	 * multiples instances of this peer exist, it returns the index of the first
-	 * occurrence. If no occurrence exist, it return -1
-	 * 
-	 * @param neighbor
-	 *            the neighbor to search
-	 * 
-	 * @return the first index of the neighbor, -1 if not found
-	 */
-	public int getIndex(Node neighbor);
-
 }

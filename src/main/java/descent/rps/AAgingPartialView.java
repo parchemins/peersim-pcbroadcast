@@ -1,55 +1,47 @@
 package descent.rps;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import peersim.core.Node;
 
 public abstract class AAgingPartialView extends PartialView implements IAgingPartialView {
 
-	protected ArrayList<Integer> ages;
+	protected Map<Node, Integer> ages;
 
 	public AAgingPartialView() {
 		super();
-		this.ages = new ArrayList<Integer>();
+		this.ages = new HashMap<Node, Integer>();
 	}
 
 	public void incrementAge() {
-		for (Integer age : this.ages)
+		for (Integer age : this.ages.values())
 			++age;
 	}
 
 	public Node getOldest() {
-		return this.partialView.get(0);
+		Node node = null;
+		Integer age = 0;
+		for (Entry<Node, Integer> e : this.ages.entrySet()) {
+			if (age <= e.getValue()) {
+				node = e.getKey();
+				age = e.getValue();
+			}
+		}
+		return node;
 	}
 
 	public abstract List<Node> getSample(Node caller, Node neighbor, boolean isInitiator);
 
 	@Override
 	public boolean removeNode(Node peer) {
-		int index = this.getIndex(peer);
-		if (index >= 0) {
-			this.partialView.remove(index);
-			this.ages.remove(index);
-		}
-		return index >= 0;
-	}
-
-	public boolean removeNode(Node peer, Integer age) {
-		int i = 0;
-		boolean found = false;
-		while (!found && i < this.partialView.size() && this.ages.get(i) >= age) {
-			if (this.partialView.get(i).getID() == peer.getID()) {
-				found = true;
-			} else {
-				++i;
-			}
-		}
-		if (found) {
-			this.partialView.remove(i);
-			this.ages.remove(i);
-		}
-		return found;
+		boolean hasRemoved = this.partialView.contains(peer);
+		this.partialView.remove(peer, 1);
+		if (!this.partialView.contains(peer))
+			this.ages.remove(peer);
+		return hasRemoved;
 	}
 
 	public abstract void mergeSample(Node me, Node other, List<Node> newSample, List<Node> oldSample,
