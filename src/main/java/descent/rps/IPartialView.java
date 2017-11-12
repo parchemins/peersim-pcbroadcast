@@ -1,7 +1,5 @@
 package descent.rps;
 
-import java.util.List;
-
 import peersim.core.Node;
 
 /**
@@ -35,7 +33,7 @@ public interface IPartialView {
 	 *            the peer to remove
 	 * @return true if the peer has been removed, false otherwise
 	 */
-	public boolean removeNode(Node peer);
+	public boolean removeNeighbor(Node peer);
 
 	/**
 	 * Add the neighbor to the partial view

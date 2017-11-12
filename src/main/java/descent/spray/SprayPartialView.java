@@ -1,7 +1,6 @@
 package descent.spray;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import descent.rps.AAgingPartialView;
@@ -23,13 +22,18 @@ public class SprayPartialView extends AAgingPartialView {
 
 	public List<Node> getSample(Node caller, Node neighbor, boolean isInitiator) {
 		ArrayList<Node> sample = new ArrayList<Node>();
-		ArrayList<Node> clone = new ArrayList<Node>(this.partialView);
+		ArrayList<Node> clone = new ArrayList<Node>();
+
+		for (Node n : this.partialView) {
+			Integer occ = this.partialView.getCount(n);
+			for (int i = 0; i < occ ; ++i)
+				clone.add(n);
+		}
 
 		// #A if the caller in the initiator, it automatically adds itself
-
 		int sampleSize = (int) Math.ceil(clone.size() / 2.0);
 		if (isInitiator) { // called from the chosen peer
-			clone.remove(0);// replace an occurrence of the chosen neighbor
+			clone.remove(clone.indexOf(neighbor));// replace an occurrence of the chosen neighbor
 			sample.add(caller); // by the initiator identity
 		}
 
@@ -49,8 +53,8 @@ public class SprayPartialView extends AAgingPartialView {
 	}
 
 	/**
-	 * Replace all the occurrences of the old node by the fresh one in the
-	 * sample in argument
+	 * Replace all the occurrences of the old node by the fresh one in the sample in
+	 * argument
 	 * 
 	 * @param sample
 	 *            the list containing the elements to replace
@@ -60,7 +64,7 @@ public class SprayPartialView extends AAgingPartialView {
 	 *            the peer to insert
 	 * @return a new list of node with replaced elements
 	 */
-	private static List<Node> replace(List<Node> sample, Node old, Node fresh) {
+	public static List<Node> replace(List<Node> sample, Node old, Node fresh) {
 		ArrayList<Node> result = new ArrayList<Node>();
 		for (int i = 0; i < sample.size(); ++i) {
 			if (sample.get(i).getID() == old.getID()) {
@@ -77,10 +81,10 @@ public class SprayPartialView extends AAgingPartialView {
 
 		// opposite transformation of the getSample
 		ArrayList<Node> oldSampleInitial = (ArrayList<Node>) replace(oldSample, caller, neighbor);
-		// #A remove the original sample
-		for (Node toRemoveNeighbor : oldSampleInitial) {
-			this.removeNode(toRemoveNeighbor);
-		}
+		// #A remove the original sample (NOW MOVED IN SPRAY)
+		// for (Node toRemoveNeighbor : oldSampleInitial) {
+		// this.removeNode(toRemoveNeighbor);
+		// }
 
 		// #B add the received sample
 		for (Node toAddNeighbor : newSample) {
@@ -104,10 +108,13 @@ public class SprayPartialView extends AAgingPartialView {
 		}
 	}
 
+	@Override
 	public boolean addNeighbor(Node peer) {
 		// we do not check for doubles since Spray allows them
 		this.partialView.add(peer);
-		this.ages.add(new Integer(0));
+		if (!this.ages.containsKey(peer)) {
+			this.ages.put(peer, 0);
+		}
 		return true;
 	}
 
@@ -119,57 +126,38 @@ public class SprayPartialView extends AAgingPartialView {
 	 * @return the number of removals
 	 */
 	public int removeAll(Node neighbor) {
-		int occ = 0;
-		int i = 0;
-		while (i < this.partialView.size()) {
-			if (this.partialView.get(i).getID() == neighbor.getID()) {
-				this.partialView.remove(i);
-				this.ages.remove(i);
-				++occ;
-			} else {
-				++i;
-			}
-		}
+		int occ = this.partialView.getCount(neighbor);
+		this.partialView.remove(neighbor);
+		this.ages.remove(neighbor);
 		return occ;
 	}
 
-	public Integer count(Node nodeToCount) {
-		Integer result = 0;
-		for (Node node : this.partialView) {
-			if (nodeToCount.equals(node)) {
-				++result;
+	@Override
+	public boolean removeNeighbor(Node neighbor) {
+		boolean hasRemoved = this.partialView.contains(neighbor);
+		if (hasRemoved) {
+			this.partialView.remove(neighbor, 1);
+			if (!this.partialView.contains(neighbor)) {
+				this.ages.remove(neighbor);
 			}
 		}
-		return result;
+		return hasRemoved;
+	}
+
+	public Integer count(Node nodeToCount) {
+		return this.partialView.getCount(nodeToCount);
 	}
 
 	public Node getLowestOcc() {
-		// ugly but whatever
-		HashMap<Node, Integer> occurences = new HashMap<Node, Integer>();
-		for (Node n : this.partialView) {
-			if (n.isUp()) {
-				if (!occurences.containsKey(n)) {
-					occurences.put(n, 0);
-				}
-				occurences.put(n, occurences.get(n) + 1);
-			}
-		}
-		Integer min = Integer.MAX_VALUE;
 		Node result = null;
-		for (Node k : occurences.keySet()) {
-			if (occurences.get(k) < min) {
-				min = occurences.get(k);
-				result = k;
+		Integer max = 0;
+		for (Node neighbor : this.partialView) {
+			Integer occ = this.partialView.getCount(neighbor);
+			if (occ >= max) {
+				result = neighbor;
 			}
 		}
 		return result;
 	}
 
-	@Override
-	public Object clone() throws CloneNotSupportedException {
-		SprayPartialView spv = new SprayPartialView();
-		spv.partialView = new ArrayList<Node>(this.partialView);
-		spv.ages = new ArrayList<Integer>(this.ages);
-		return spv;
-	}
 }

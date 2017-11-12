@@ -1,8 +1,8 @@
 package descent.spray;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import descent.controllers.CDynamicNetwork;
 import descent.merging.MergingRegister;
 import descent.rps.APeerSampling;
 import descent.rps.IMessage;
@@ -85,6 +85,12 @@ public class Spray extends APeerSampling {
 
 		// #3 Merge the received sample with current partial view
 		List<Node> samplePrime = (List<Node>) received.getPayload();
+		// remove the original sample (MOVED OUT FROM partialView.merge)
+		ArrayList<Node> oldSampleInitial = (ArrayList<Node>) SprayPartialView.replace(sample, this.node, q);
+		for (Node toRemoveNeighbor : oldSampleInitial) {
+			this.removeNeighbor(toRemoveNeighbor);
+		}
+
 		this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
 
 	}
@@ -94,6 +100,11 @@ public class Spray extends APeerSampling {
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin, false);
 		// #1 Merge the received sample with our own partial view and exclude
 		// the sample to send
+		// remove the original sample (MOVED OUT FROM partialView.merge)
+		ArrayList<Node> oldSampleInitial = (ArrayList<Node>) SprayPartialView.replace(samplePrime, this.node, origin);
+		for (Node toRemoveNeighbor : oldSampleInitial) {
+			this.removeNeighbor(toRemoveNeighbor);
+		}
 		this.partialView.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
 		// #2 Prepare the result to send back
 		return new SprayMessage(samplePrime);
@@ -119,13 +130,12 @@ public class Spray extends APeerSampling {
 
 	public void onSubscription(Node origin) {
 		// #0 Check dead neighbors
-		List<Node> deadNeighbors = this.getDeadNeighbors();
-		for (Node deadNeighbor : deadNeighbors) {
+		for (Node deadNeighbor : this.getDeadNeighbors()) {
 			this.onPeerDown(deadNeighbor);
 		}
 		// #1 Forward subscription to neighbors
-		List<Node> aliveNeighbors = this.getAliveNeighbors();
-		if (aliveNeighbors.size() > 0) {
+		Iterable<Node> aliveNeighbors = this.getAliveNeighbors();
+		if (aliveNeighbors.iterator().hasNext()) {
 			// #A If the contact peer has neighbors
 			for (Node neighbor : aliveNeighbors) {
 				Spray neighborSpray = (Spray) neighbor.getProtocol(Spray.pid);
@@ -172,22 +182,19 @@ public class Spray extends APeerSampling {
 
 	@Override
 	public IPeerSampling clone() {
-		try {
-			Spray sprayClone = new Spray();
-			sprayClone.A = this.A;
-			sprayClone.B = this.B;
-			sprayClone.partialView = (SprayPartialView) this.partialView.clone();
-			sprayClone.register = (MergingRegister) this.register.clone();
-			return sprayClone;
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-		}
-		return null;
+		Spray sprayClone = new Spray();
+		sprayClone.A = this.A;
+		sprayClone.B = this.B;
+		return sprayClone;
 	}
 
 	@Override
 	public boolean addNeighbor(Node peer) {
 		return this.partialView.addNeighbor(peer);
+	}
+
+	public boolean removeNeighbor(Node peer) {
+		return this.partialView.removeNeighbor(peer);
 	}
 
 	/**
@@ -200,12 +207,12 @@ public class Spray extends APeerSampling {
 		// #1 Probability to *not* recreate the connection: A/ln(N) + B/N
 		double pRemove = this.A / this.partialView.size() + this.B / Math.exp(this.partialView.size());
 		// #2 Remove all occurrences of q in our partial view and count them
-		int occ = this.partialView.removeAll(q);
+		int occ = this.partialView.removeAll(q); // (XXX) may need to go through this.removeNeighbor
 		if (this.partialView.size() > 0) {
 			// #3 probabilistically double known connections
 			for (int i = 0; i < occ; ++i) {
 				if (CommonState.r.nextDouble() > pRemove) {
-					this.partialView.addNeighbor(this.partialView.getLowestOcc());
+					this.addNeighbor(this.partialView.getLowestOcc());
 				}
 			}
 		}
@@ -219,7 +226,7 @@ public class Spray extends APeerSampling {
 	 */
 	private void onArcDown(Node q) {
 		// #1 Remove the unestablished link
-		this.partialView.removeNode(q);
+		this.removeNeighbor(q);
 		// #2 Double a known connection at random
 		if (this.partialView.size() > 0) {
 			Node toDouble = this.partialView.getLowestOcc();
@@ -227,11 +234,11 @@ public class Spray extends APeerSampling {
 		}
 	}
 
-	public List<Node> getPeers(int k) {
+	public Iterable<Node> getPeers(int k) {
 		return this.partialView.getPeers(k);
 	}
 
-	public List<Node> getPeers() {
+	public Iterable<Node> getPeers() {
 		return this.partialView.getPeers();
 	}
 }

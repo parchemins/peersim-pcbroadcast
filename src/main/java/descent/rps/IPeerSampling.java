@@ -1,7 +1,5 @@
 package descent.rps;
 
-import java.util.List;
-
 import peersim.core.Node;
 
 /**
@@ -10,24 +8,15 @@ import peersim.core.Node;
 public interface IPeerSampling {
 
 	/**
-	 * Get the total outbound cost of tick rounds
-	 *
-	 * @return the outbound cost of the peer. The Value indicates how much
-	 *         "Data" was sent from this peer (the metric simply adds up the
-	 *         number of peers that were sent for exchange with other nodes)
-	 */
-	// int[] generatedPeerSamplingCost();
-
-	/**
 	 * Function called every delta time. It generally corresponds to a protocol
-	 * aiming to renew connections to handle churn. Often, a neighbor is chosen
-	 * to perform the operation.
+	 * aiming to renew connections to handle churn. Often, a neighbor is chosen to
+	 * perform the operation.
 	 */
 	void periodicCall();
 
 	/**
-	 * The event trigger when the neighbor received a message from the periodic
-	 * call of a peer (cf periodicCall function).
+	 * The event trigger when the neighbor received a message from the periodic call
+	 * of a peer (cf periodicCall function).
 	 *
 	 * @param origin
 	 *            the peer which initiates the periodic protocol
@@ -56,8 +45,7 @@ public interface IPeerSampling {
 	void onSubscription(Node origin);
 
 	/**
-	 * Leave the network. Either does nothing, or may help the network to
-	 * recover
+	 * Leave the network. Either does nothing, or may help the network to recover
 	 */
 	void leave();
 
@@ -66,24 +54,24 @@ public interface IPeerSampling {
 	 *
 	 * @param k
 	 *            the number of requested neighbors
-	 * @return a list of neighbors of size k, or size of the neighborhood if k
-	 *         is too large
+	 * @return a list of neighbors of size k, or size of the neighborhood if k is
+	 *         too large
 	 */
-	List<Node> getPeers(int k);
+	Iterable<Node> getPeers(int k);
 
 	/**
 	 * Getter of all the neighbors. Includes dead links.
 	 * 
 	 * @return the list of all neighbors.
 	 */
-	List<Node> getPeers();
+	Iterable<Node> getPeers();
 
 	/**
 	 * Getter of the neighbors, does not include peers that are dead
 	 *
 	 * @return a list of nodes
 	 */
-	List<Node> getAliveNeighbors();
+	Iterable<Node> getAliveNeighbors();
 
 	/**
 	 * Clone

@@ -1,5 +1,7 @@
 package descent.observers.structure;
 
+import org.apache.commons.collections4.IteratorUtils;
+
 import descent.rps.IDynamic;
 import descent.rps.IPeerSampling;
 import peersim.config.Configuration;
@@ -21,8 +23,7 @@ public class Observer implements Control {
 	private boolean isLast = false;
 
 	public Observer(String name) {
-		this.pid = Configuration.lookupPid(Configuration.getString(name + "."
-				+ PAR_PROTOCOL));
+		this.pid = Configuration.lookupPid(Configuration.getString(name + "." + PAR_PROTOCOL));
 
 		final Class<?> programClass = Configuration.getClass(name + "." + PROG);
 		try {
@@ -46,10 +47,9 @@ public class Observer implements Control {
 				Node n = Network.get(i);
 				IDynamic d = (IDynamic) n.getProtocol(pid);
 				if (d.isUp()) {
-					IPeerSampling pss = (IPeerSampling) n
-							.getProtocol(pid);
+					IPeerSampling pss = (IPeerSampling) n.getProtocol(pid);
 					observer.addStrict(n, pss);
-					final int size = pss.getAliveNeighbors().size();
+					final int size = IteratorUtils.toList(pss.getAliveNeighbors().iterator()).size();
 					if (size < min) {
 						min = size;
 					}

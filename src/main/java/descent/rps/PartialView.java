@@ -1,7 +1,6 @@
 package descent.rps;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.HashBag;
@@ -39,7 +38,7 @@ public class PartialView implements IPartialView {
 		}
 	}
 
-	public boolean removeNode(Node peer) {
+	public boolean removeNeighbor(Node peer) {
 		return this.partialView.remove(peer);
 	}
 

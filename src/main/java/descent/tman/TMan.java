@@ -3,6 +3,8 @@ package descent.tman;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections4.IteratorUtils;
+
 import descent.rps.APeerSampling;
 import descent.rps.IMessage;
 import descent.rps.IPeerSampling;
@@ -50,8 +52,9 @@ public class TMan extends APeerSampling {
 		this.shuffleUsingRPS = !this.shuffleUsingRPS;
 
 		// #1 Choose a neighbor to exchange with
-		List<Node> randomNeighbors = ((IPeerSampling) this.node.getProtocol(TMan.rps)).getPeers();
-		
+		List<Node> randomNeighbors = IteratorUtils
+				.toList(((IPeerSampling) this.node.getProtocol(TMan.rps)).getPeers().iterator());
+
 		Node q = null;
 		TMan qTMan = null;
 		if (this.partialView.size() > 0 && !this.shuffleUsingRPS) {
@@ -86,7 +89,8 @@ public class TMan extends APeerSampling {
 	 * @return The response of the receiving peer to the origin
 	 */
 	public TManMessage onPeriodicCall(Node origin, IMessage message) {
-		List<Node> randomNeighbors = ((IPeerSampling) this.node.getProtocol(TMan.rps)).getPeers();
+		List<Node> randomNeighbors = IteratorUtils
+				.toList(((IPeerSampling) this.node.getProtocol(TMan.rps)).getPeers().iterator());
 		// #1 prepare a sample
 		List<Node> sample = this.partialView.getSample(this.node, origin, randomNeighbors,
 				Math.floor(randomNeighbors.size() / 2));
@@ -117,8 +121,8 @@ public class TMan extends APeerSampling {
 	 *            The newcomer
 	 */
 	public void onSubscription(Node origin) {
-		List<Node> aliveNeighbors = this.getAliveNeighbors();
-		if (aliveNeighbors.size() > 0) {
+		Iterable<Node> aliveNeighbors = this.getAliveNeighbors();
+		if (aliveNeighbors.iterator().hasNext()) {
 			List<Node> sample = new ArrayList<Node>();
 			sample.add(origin);
 			for (Node neighbor : aliveNeighbors) {
@@ -155,18 +159,18 @@ public class TMan extends APeerSampling {
 			List<Node> sample = new ArrayList<Node>();
 			sample.add(peer);
 			this.partialView.merge(this, this.node, sample,
-					((IPeerSampling) this.node.getProtocol(TMan.rps)).getPeers().size());
+					((TMan) this.node.getProtocol(TMan.rps)).partialView.size());
 			return this.partialView.contains(peer);
 		} else {
 			return false;
 		}
 	}
 
-	public List<Node> getPeers(int k) {
+	public Iterable<Node> getPeers(int k) {
 		return this.partialView.getPeers(k);
 	}
 
-	public List<Node> getPeers() {
+	public Iterable<Node> getPeers() {
 		return this.partialView.getPeers();
 	}
 

@@ -3,6 +3,8 @@ package descent.slicer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections4.IteratorUtils;
+
 import descent.rps.IPeerSampling;
 import descent.tman.TMan;
 import descent.tman.TManPartialView;
@@ -39,8 +41,7 @@ public class Slicer extends TMan {
 
 	@Override
 	public void onSubscription(Node origin) {
-
-		if (((IPeerSampling) this.node.getProtocol(this.rps)).getPeers().isEmpty()) {
+		if (IteratorUtils.toList(((IPeerSampling) this.node.getProtocol(this.rps)).getPeers().iterator()).isEmpty()) {
 			((RankDescriptor) this.descriptor).setRank(0);
 			this.stamp = new Stamp();
 			this.isWriter = true;
@@ -58,7 +59,8 @@ public class Slicer extends TMan {
 		}
 
 		// #1 initialize descriptor based on Spray
-		List<Node> randomNeighbors = ((IPeerSampling) this.node.getProtocol(this.rps)).getPeers();
+		List<Node> randomNeighbors = IteratorUtils
+				.toList(((IPeerSampling) this.node.getProtocol(this.rps)).getPeers().iterator());
 
 		if (this.age >= Math.max(randomNeighbors.size(), 6) && !((RankDescriptor) this.descriptor).isSet()) {
 			((RankDescriptor) this.descriptor).setRank((int) Math.floor(randomNeighbors.size()));

@@ -1580,7 +1580,7 @@ public class DictGraph {
 	 *            The number of tries
 	 * @return
 	 */
-	public Double findWriter(Integer N) {
+	/*public Double findWriter(Integer N) {
 		Integer times = 0;
 		Integer sum = 0;
 		for (int i = 0; i < N; ++i) {
@@ -1604,7 +1604,7 @@ public class DictGraph {
 		}
 
 		return (sum / (double) times);
-	}
+	}*/
 
 	/**
 	 * Process how far from the perfect slices the current overlay network is

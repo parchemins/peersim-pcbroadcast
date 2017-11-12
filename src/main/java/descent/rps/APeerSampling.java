@@ -47,12 +47,12 @@ public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, I
 	public abstract boolean addNeighbor(Node peer);
 
 	/**
-	 * Compute the probability that the connection establishment fails. A fail
-	 * setup means that locally, the peer has the reference to the remote peer
-	 * but the arc (or link (or connection)) associated to it does not work. It
-	 * depends of the number of hops before reaching the peer to connect to. The
-	 * inbetween arcs and peer must remains up for the round-trip, mandatory in
-	 * three-way handshake connection context.
+	 * Compute the probability that the connection establishment fails. A fail setup
+	 * means that locally, the peer has the reference to the remote peer but the arc
+	 * (or link (or connection)) associated to it does not work. It depends of the
+	 * number of hops before reaching the peer to connect to. The inbetween arcs and
+	 * peer must remains up for the round-trip, mandatory in three-way handshake
+	 * connection context.
 	 * 
 	 * @param path
 	 *            the path traveled by the connection
@@ -86,23 +86,14 @@ public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, I
 		return found;
 	}
 
-	public int degree() {
-		return this.getAliveNeighbors().size();
-	}
-
-	public Node getNeighbor(int index) {
-		return this.getPeers(Integer.MAX_VALUE).get(index);
-	}
-
 	/**
 	 * Getter of the list of alive neighbors
 	 * 
 	 * @return a list of nodes
 	 */
-	public List<Node> getAliveNeighbors() {
-		List<Node> neighbors = this.getPeers(Integer.MAX_VALUE);
+	public Iterable<Node> getAliveNeighbors() {
 		ArrayList<Node> result = new ArrayList<Node>();
-		for (Node neighbor : neighbors) {
+		for (Node neighbor : this.getPeers()) {
 			if (neighbor.isUp()) {
 				result.add(neighbor);
 			}
@@ -115,10 +106,9 @@ public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, I
 	 * 
 	 * @return a list of nodes
 	 */
-	public List<Node> getDeadNeighbors() {
-		List<Node> neighbors = this.getPeers(Integer.MAX_VALUE);
+	public Iterable<Node> getDeadNeighbors() {
 		ArrayList<Node> result = new ArrayList<Node>();
-		for (Node neighbor : neighbors) {
+		for (Node neighbor : this.getPeers()) {
 			if (!neighbor.isUp()) {
 				result.add(neighbor);
 			}
@@ -126,15 +116,34 @@ public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, I
 		return result;
 	}
 
-	public void pack() {
-	}
-
 	public boolean isUp() {
 		return this.isUp;
 	}
 
 	public boolean isDown() {
-		return this.isUp;
+		return !this.isUp;
+	}
+
+	public int degree() {
+		Iterator<Node> neighbors = this.getAliveNeighbors().iterator();
+		Integer sum = 0;
+		while (neighbors.hasNext()) {
+			++sum;
+			neighbors.next();
+		}
+		return sum;
+	}
+
+	public Node getNeighbor(int n) {
+		Iterator<Node> neighbors = this.getPeers().iterator();
+		Node result = neighbors.next();
+		for (int i = 0; i < n; ++i) {
+			result = neighbors.next();
+		}
+		return result;
+	}
+
+	public void pack() {
 	}
 
 }

@@ -37,18 +37,6 @@ public interface IAgingPartialView {
 	public List<Node> getSample(Node caller, Node neighbor, boolean isInitiator);
 
 	/**
-	 * Remove the peer from the neighborhood, if multiples occurrences of the
-	 * pair <neighbor, age> exist, only one occurrence is removed
-	 * 
-	 * @param peer
-	 *            the peer to remove
-	 * @param age
-	 *            the age of the peer to remove
-	 * @return true if the peer has been remove, false otherwise
-	 */
-	public boolean removeNode(Node peer, Integer age);
-
-	/**
 	 * Merge the sample with the partial view taking into account the old sent
 	 * sample
 	 * 

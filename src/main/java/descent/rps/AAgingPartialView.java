@@ -36,7 +36,7 @@ public abstract class AAgingPartialView extends PartialView implements IAgingPar
 	public abstract List<Node> getSample(Node caller, Node neighbor, boolean isInitiator);
 
 	@Override
-	public boolean removeNode(Node peer) {
+	public boolean removeNeighbor(Node peer) {
 		boolean hasRemoved = this.partialView.contains(peer);
 		this.partialView.remove(peer, 1);
 		if (!this.partialView.contains(peer))
