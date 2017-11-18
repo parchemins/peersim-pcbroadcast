@@ -85,13 +85,7 @@ public class Spray extends APeerSampling {
 
 		// #3 Merge the received sample with current partial view
 		List<Node> samplePrime = (List<Node>) received.getPayload();
-		// remove the original sample (MOVED OUT FROM partialView.merge)
-		ArrayList<Node> oldSampleInitial = (ArrayList<Node>) SprayPartialView.replace(sample, this.node, q);
-		for (Node toRemoveNeighbor : oldSampleInitial) {
-			this.removeNeighbor(toRemoveNeighbor);
-		}
-
-		this.partialView.mergeSample(this.node, q, samplePrime, sample, true);
+		this.mergeSample(this.node, q, samplePrime, sample, true);
 
 	}
 
@@ -99,13 +93,7 @@ public class Spray extends APeerSampling {
 		// #0 Process the sample to send back
 		List<Node> samplePrime = this.partialView.getSample(this.node, origin, false);
 		// #1 Merge the received sample with our own partial view and exclude
-		// the sample to send
-		// remove the original sample (MOVED OUT FROM partialView.merge)
-		ArrayList<Node> oldSampleInitial = (ArrayList<Node>) SprayPartialView.replace(samplePrime, this.node, origin);
-		for (Node toRemoveNeighbor : oldSampleInitial) {
-			this.removeNeighbor(toRemoveNeighbor);
-		}
-		this.partialView.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
+		this.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
 		// #2 Prepare the result to send back
 		return new SprayMessage(samplePrime);
 	}
@@ -230,7 +218,7 @@ public class Spray extends APeerSampling {
 		// #2 Double a known connection at random
 		if (this.partialView.size() > 0) {
 			Node toDouble = this.partialView.getLowestOcc();
-			this.partialView.addNeighbor(toDouble);
+			this.addNeighbor(toDouble);
 		}
 	}
 
@@ -240,5 +228,38 @@ public class Spray extends APeerSampling {
 
 	public Iterable<Node> getPeers() {
 		return this.partialView.getPeers();
+	}
+	
+	
+
+	public void mergeSample(Node caller, Node neighbor, List<Node> newSample, List<Node> oldSample,
+			boolean isInitiator) {
+
+		// opposite transformation of the getSample
+		ArrayList<Node> oldSampleInitial = (ArrayList<Node>) SprayPartialView.replace(oldSample, caller, neighbor);
+		for (Node toRemoveNeighbor : oldSampleInitial) {
+			this.removeNeighbor(toRemoveNeighbor);
+		}
+
+		// #B add the received sample
+		for (Node toAddNeighbor : newSample) {
+			boolean found = false;
+			int i = 0;
+			if (this.partialView.contains(toAddNeighbor)) {
+				// #1 search for a removed peer that is not duplicate
+				while (!found && oldSampleInitial.size() > i) {
+					if (!this.partialView.contains(oldSampleInitial.get(i))) {
+						found = true;
+					} else {
+						++i;
+					}
+				}
+			}
+			if (!found) {
+				this.addNeighbor(toAddNeighbor);
+			} else {
+				this.addNeighbor(oldSampleInitial.get(i));
+			}
+		}
 	}
 }
