@@ -35,13 +35,24 @@ public class BiSpray extends Spray {
 		HashSet<Node> before = new HashSet<Node>();
 		before.addAll(inview.uniqueSet());
 		before.addAll(outview.uniqueSet());
-		System.out.println("before " + before.size());
+
 		super.periodicCall();
+
 		HashSet<Node> after = new HashSet<Node>();
 		after.addAll(inview.uniqueSet());
 		after.addAll(outview.uniqueSet());
-		HashSet<Node> newPeers = new HashSet<Node>(after);
-		newPeers.removeAll(before);
+
+		HashSet<Node> newNeighbors = new HashSet<Node>(after);
+		newNeighbors.removeAll(before);
+		for (Node n : newNeighbors) {
+			this.opened(n);
+		}
+
+		HashSet<Node> removedNeighbors = new HashSet<Node>(before);
+		removedNeighbors.removeAll(after);
+		for (Node n : removedNeighbors) {
+			this.closed(n);
+		}
 	}
 
 	@Override
@@ -49,13 +60,34 @@ public class BiSpray extends Spray {
 		HashSet<Node> before = new HashSet<Node>();
 		before.addAll(inview.uniqueSet());
 		before.addAll(outview.uniqueSet());
+
 		IMessage m = super.onPeriodicCall(origin, message);
+
 		HashSet<Node> after = new HashSet<Node>();
 		after.addAll(inview.uniqueSet());
 		after.addAll(outview.uniqueSet());
-		HashSet<Node> newPeers = new HashSet<Node>(after);
-		newPeers.removeAll(before);
+
+		HashSet<Node> newNeighbors = new HashSet<Node>(after);
+		newNeighbors.removeAll(before);
+		for (Node n : newNeighbors) {
+			this.opened(n);
+		}
+
+		HashSet<Node> removedNeighbors = new HashSet<Node>(before);
+		removedNeighbors.removeAll(after);
+		for (Node n : removedNeighbors) {
+			this.closed(n);
+		}
+
 		return m;
+	}
+
+	public void opened(Node n) {
+		// nothing
+	}
+
+	public void closed(Node n) {
+		// nothing
 	}
 
 	@Override
