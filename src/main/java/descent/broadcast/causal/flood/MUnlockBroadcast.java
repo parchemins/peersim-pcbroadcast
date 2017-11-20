@@ -1,4 +1,4 @@
-package descent.causalbroadcast.rps;
+package descent.broadcast.causal.flood;
 
 import descent.rps.IMessage;
 import peersim.core.Node;
@@ -8,9 +8,11 @@ import peersim.core.Node;
  */
 public class MUnlockBroadcast implements IMessage {
 
-	private final Node to;
+	public final Node from;
+	public final Node to;
 
-	public MUnlockBroadcast(Node to) {
+	public MUnlockBroadcast(Node from, Node to) {
+		this.from = from;
 		this.to = to;
 	}
 

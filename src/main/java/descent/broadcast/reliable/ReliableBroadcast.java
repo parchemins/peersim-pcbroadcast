@@ -74,7 +74,7 @@ public class ReliableBroadcast implements EDProtocol, CDProtocol {
 	 * @param m
 	 *            The message to send.
 	 */
-	private void _sendToAllNeighbors(MReliableBroadcast m) {
+	protected void _sendToAllNeighbors(MReliableBroadcast m) {
 		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(ReliableBroadcast.PID));
 
 		for (Node q : ps.getAliveNeighbors()) {
