@@ -8,7 +8,9 @@ import org.apache.commons.collections4.bag.HashBag;
 import descent.rps.IMessage;
 import descent.rps.IPeerSampling;
 import descent.spray.Spray;
+import peersim.config.Configuration;
 import peersim.core.Node;
+import peersim.edsim.EDProtocol;
 
 /**
  * Spray with bidirectional communication links.
@@ -18,8 +20,14 @@ public class BiSpray extends Spray {
 	public Bag<Node> inview;
 	public Bag<Node> outview;
 
+	private static final String PAR_LISTENER = "listener";
+	private static int listener;
+
 	public BiSpray(String prefix) {
 		super(prefix);
+
+		BiSpray.listener = Configuration.getPid(prefix + "." + BiSpray.PAR_LISTENER, -1);
+
 		this.inview = new HashBag<Node>();
 		this.outview = new HashBag<Node>();
 	}
@@ -83,11 +91,15 @@ public class BiSpray extends Spray {
 	}
 
 	public void opened(Node n) {
-		// nothing
+		if (BiSpray.listener != -1) {
+			((EDProtocol) this.node.getProtocol(BiSpray.listener)).processEvent(this.node, BiSpray.pid, new MOpen(n));
+		}
 	}
 
 	public void closed(Node n) {
-		// nothing
+		if (BiSpray.listener != -1) {
+			((EDProtocol) this.node.getProtocol(BiSpray.listener)).processEvent(this.node, BiSpray.pid, new MClose(n));
+		}
 	}
 
 	@Override

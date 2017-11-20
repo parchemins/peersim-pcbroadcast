@@ -5,7 +5,7 @@ import descent.rps.IMessage;
 /**
  * Message produced and consumed by reliable broadcast.
  */
-public class MReliableBroadcast {
+public class MReliableBroadcast implements IMessage {
 
 	public final Long id;
 	public final Integer counter;
@@ -15,6 +15,10 @@ public class MReliableBroadcast {
 		this.id = id;
 		this.counter = counter;
 		this.message = message;
+	}
+
+	public Object getPayload() {
+		return this.message;
 	}
 
 }
