@@ -1,5 +1,7 @@
 package descent.rps;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +24,18 @@ public abstract class AAgingPartialView extends PartialView implements IAgingPar
 	}
 
 	public Node getOldest() {
-		Node node = null;
 		Integer age = 0;
+		ArrayList<Node> possibleResults = new ArrayList<Node>();
 		for (Entry<Node, Integer> e : this.ages.entrySet()) {
-			if (age <= e.getValue()) {
-				node = e.getKey();
+			if (age < e.getValue()) {
 				age = e.getValue();
+				possibleResults = new ArrayList<Node>();
+			}
+			if (age == e.getValue()) {
+				possibleResults.add(e.getKey());
 			}
 		}
+		Node node = possibleResults.get((int) Math.floor(Math.random() * possibleResults.size()));
 		return node;
 	}
 

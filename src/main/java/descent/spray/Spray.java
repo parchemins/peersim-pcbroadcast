@@ -25,7 +25,7 @@ public class Spray extends APeerSampling {
 	private static final String PAR_B = "b";
 	protected Double B = 0.;
 
-	private static final String PAR_PROTOCOL = "protocol";
+	private static final String PAR_PID = "pid";
 	public static int pid;
 
 	// #B Local variables
@@ -38,7 +38,7 @@ public class Spray extends APeerSampling {
 		this.partialView = new SprayPartialView();
 		this.register = new MergingRegister();
 
-		Spray.pid = Configuration.getPid(prefix + "." + Spray.PAR_PROTOCOL);
+		Spray.pid = Configuration.getPid(prefix + "." + Spray.PAR_PID);
 		this.A = Configuration.getDouble(prefix + "." + Spray.PAR_A, 1.);
 		this.B = Configuration.getDouble(prefix + "." + Spray.PAR_B, 0.);
 	}
@@ -118,11 +118,11 @@ public class Spray extends APeerSampling {
 
 	public void onSubscription(Node origin) {
 		// #0 Check dead neighbors
-		for (Node deadNeighbor : this.getDeadNeighbors()) {
+		for (Node deadNeighbor : this._getDeadNeighbors()) {
 			this.onPeerDown(deadNeighbor);
 		}
 		// #1 Forward subscription to neighbors
-		Iterable<Node> aliveNeighbors = this.getAliveNeighbors();
+		Iterable<Node> aliveNeighbors = this._getAliveNeighbors();
 		if (aliveNeighbors.iterator().hasNext()) {
 			// #A If the contact peer has neighbors
 			for (Node neighbor : aliveNeighbors) {
@@ -134,6 +134,24 @@ public class Spray extends APeerSampling {
 			// #2 Inject A + B arcs to expect A*ln(N)+B arcs
 			this.inject(this.A, this.B, origin);
 		}
+	}
+
+	/**
+	 * private version of getalive neighbors
+	 * 
+	 * @return
+	 */
+	private Iterable<Node> _getAliveNeighbors() {
+		return super.getAliveNeighbors();
+	}
+
+	/**
+	 * private version of getdead neighbors
+	 * 
+	 * @return
+	 */
+	private Iterable<Node> _getDeadNeighbors() {
+		return super.getDeadNeighbors();
 	}
 
 	/**
@@ -195,7 +213,8 @@ public class Spray extends APeerSampling {
 		// #1 Probability to *not* recreate the connection: A/ln(N) + B/N
 		double pRemove = this.A / this.partialView.size() + this.B / Math.exp(this.partialView.size());
 		// #2 Remove all occurrences of q in our partial view and count them
-		int occ = this.partialView.removeAll(q); // (XXX) may need to go through this.removeNeighbor
+		int occ = this.partialView.removeAll(q); // (XXX) may need to go through
+													// this.removeNeighbor
 		if (this.partialView.size() > 0) {
 			// #3 probabilistically double known connections
 			for (int i = 0; i < occ; ++i) {
@@ -229,8 +248,6 @@ public class Spray extends APeerSampling {
 	public Iterable<Node> getPeers() {
 		return this.partialView.getPeers();
 	}
-	
-	
 
 	public void mergeSample(Node caller, Node neighbor, List<Node> newSample, List<Node> oldSample,
 			boolean isInitiator) {

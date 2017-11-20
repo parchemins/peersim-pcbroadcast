@@ -12,7 +12,7 @@ simulation.logtime 1
 ################### protocols ===========================
 protocol.link peersim.core.IdleProtocol
 
-protocol.rps descent.bidirectionnal.BiSpray
+protocol.rps descent.spray.Spray
 protocol.rps.protocol rps
 protocol.rps.delta 1
 protocol.rps.step 1

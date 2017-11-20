@@ -1,5 +1,6 @@
 package descent.bidirectionnal;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import org.apache.commons.collections4.Bag;
@@ -105,22 +106,37 @@ public class BiSpray extends Spray {
 	@Override
 	public boolean addNeighbor(Node peer) {
 		this.outview.add(peer);
-		BiSpray bs = (BiSpray) peer.getProtocol(this.pid);
-		bs.inview.add(peer);
+		BiSpray bs = (BiSpray) peer.getProtocol(BiSpray.pid);
+		bs.inview.add(this.node);
 		return super.addNeighbor(peer);
 	}
 
 	@Override
 	public boolean removeNeighbor(Node peer) {
 		this.outview.remove(peer, 1);
-		BiSpray bs = (BiSpray) peer.getProtocol(this.pid);
-		bs.inview.remove(peer, 1);
+		BiSpray bs = (BiSpray) peer.getProtocol(BiSpray.pid);
+		bs.inview.remove(this.node, 1);
 		return super.removeNeighbor(peer);
 	}
 
 	@Override
 	public IPeerSampling clone() {
 		return new BiSpray();
+	}
+
+	@Override
+	public Iterable<Node> getAliveNeighbors() {
+		// System.out.println("inview " + this.inview.uniqueSet().size());
+		// System.out.println("outview " + this.outview.uniqueSet().size());
+		ArrayList<Node> neighbors = new ArrayList<Node>();
+		HashSet<Node> view = new HashSet<Node>(this.outview.uniqueSet());
+		view.addAll(this.inview.uniqueSet());
+		for (Node n : view) {
+			if (n.isUp()) {
+				neighbors.add(n);
+			}
+		}
+		return neighbors;
 	}
 
 }
