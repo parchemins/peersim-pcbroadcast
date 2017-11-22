@@ -19,14 +19,15 @@ simulation.logtime CYCLE
 
 ################### protocols #######################
 protocol.urt UniformRandomTransport
-protocol.urt.mindelay MINDELAY
-protocol.urt.maxdelay MAXDELAY
+protocol.urt.mindelay MIN_DELAY
+protocol.urt.maxdelay MAX_DELAY
 
 protocol.rps descent.bidirectionnal.BiSpray
 protocol.rps.pid rps
 protocol.rps.listener cb
 protocol.rps.delta 1
 protocol.rps.step SHUFFLE_PERIOD
+protocol.rps.start 1
 
 protocol.cb descent.broadcast.causal.flood.FloodingCausalBroadcast
 protocol.cb.pid cb
@@ -34,6 +35,7 @@ protocol.cb.linkable rps
 protocol.cb.delta 1
 protocol.cb.transport urt
 protocol.cb.step 1
+protocol.cb.start 1
 
 ################### dynamicity #######################
 init.sch CDScheduler
@@ -43,7 +45,7 @@ init.sch.randstart
 control.o1 descent.controllers.CDynamicNetwork
 control.o1.protocols rps
 control.o1.FINAL
-control.o1.step 10
+control.o1.step 100
 control.o1.addingPerStep 250
 control.o1.startAdd 0
 control.o1.endAdd 30
