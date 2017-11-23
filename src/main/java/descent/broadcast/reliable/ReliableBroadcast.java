@@ -16,14 +16,15 @@ import peersim.transport.Transport;
 public class ReliableBroadcast implements EDProtocol, CDProtocol {
 
 	private final static String PAR_PID = "pid";
-	protected static Integer PID;
+	public static Integer pid;
+	
 	public VVwE received;
 
 	private Integer counter = 0;
 	protected Node node;
 
 	public ReliableBroadcast(String prefix) {
-		ReliableBroadcast.PID = Configuration.getPid(prefix + "." + ReliableBroadcast.PAR_PID);
+		ReliableBroadcast.pid = Configuration.getPid(prefix + "." + ReliableBroadcast.PAR_PID);
 		this.received = new VVwE();
 	}
 
@@ -37,12 +38,13 @@ public class ReliableBroadcast implements EDProtocol, CDProtocol {
 	 * @param m
 	 *            The message to send.
 	 */
-	public void rBroadcast(IMessage m) { // b_p(m)
+	public MReliableBroadcast rBroadcast(IMessage m) { // b_p(m)
 		++this.counter;
 		MReliableBroadcast mrb = new MReliableBroadcast(this.node.getID(), this.counter, m);
 		this.received.add(mrb.id, mrb.counter);
 		this._sendToAllNeighbors(mrb);
-		this.rDeliver(mrb.message);
+		this.rDeliver(mrb);
+		return mrb;
 	}
 
 	/**
@@ -51,7 +53,7 @@ public class ReliableBroadcast implements EDProtocol, CDProtocol {
 	 * @param m
 	 *            The delivered message.
 	 */
-	public void rDeliver(IMessage m) {
+	public void rDeliver(MReliableBroadcast m) {
 		// nothing (TODO)?
 	}
 
@@ -63,9 +65,14 @@ public class ReliableBroadcast implements EDProtocol, CDProtocol {
 			if (!this.received.contains(mrb.id, mrb.counter)) {
 				this.received.add(mrb.id, mrb.counter);
 				this._sendToAllNeighbors(mrb);
-				this.rDeliver(mrb.message);
+				this.rDeliver(mrb);
 			}
 		}
+	}
+
+	protected void rSend(Node node, MReliableBroadcast m) {
+		((Transport) node.getProtocol(FastConfig.getTransport(ReliableBroadcast.pid))).send(this.node, node, m,
+				ReliableBroadcast.pid);
 	}
 
 	/**
@@ -74,13 +81,11 @@ public class ReliableBroadcast implements EDProtocol, CDProtocol {
 	 * @param m
 	 *            The message to send.
 	 */
-	protected void _sendToAllNeighbors(IMessage m) {
-		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(ReliableBroadcast.PID));
+	protected void _sendToAllNeighbors(MReliableBroadcast m) {
+		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(ReliableBroadcast.pid));
 
 		for (Node q : ps.getAliveNeighbors()) {
-			((Transport) node.getProtocol(FastConfig.getTransport(ReliableBroadcast.PID))).send(this.node, q, m,
-					ReliableBroadcast.PID);
-
+			this.rSend(q, m);
 		}
 	}
 

@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
 
+import descent.bidirectionnal.BiSpray;
+import descent.broadcast.causal.flood.FloodingCausalBroadcast;
 import descent.causalbroadcast.itc.ITC4CB;
 import descent.causalbroadcast.itc.ITCCBProtocol;
 import descent.controllers.CDynamicNetwork;
@@ -36,8 +38,7 @@ public class DictGraph {
 
 	/*
 	 * =================================================================== *
-	 * SINGLETON
-	 * ===================================================================
+	 * SINGLETON ===================================================================
 	 */
 
 	private static DictGraph singleton;
@@ -74,8 +75,7 @@ public class DictGraph {
 	}
 
 	/*
-	 * =================================================================== *
-	 * PUBLIC
+	 * =================================================================== * PUBLIC
 	 * ===================================================================
 	 */
 
@@ -674,8 +674,8 @@ public class DictGraph {
 
 	/**
 	 * Count how many partial views in the network have duplicates, triples,
-	 * quadruples etc. The number of duplicates does not matter, if the pv has
-	 * one, that its counted as +1
+	 * quadruples etc. The number of duplicates does not matter, if the pv has one,
+	 * that its counted as +1
 	 *
 	 * @return
 	 */
@@ -1162,8 +1162,7 @@ public class DictGraph {
 	}
 
 	/*
-	 * =================================================================== *
-	 * PRIVATE
+	 * =================================================================== * PRIVATE
 	 * ===================================================================
 	 */
 
@@ -1395,8 +1394,7 @@ public class DictGraph {
 	}
 
 	/**
-	 * Get the distribution of distances between neighbors at the given
-	 * resolution
+	 * Get the distribution of distances between neighbors at the given resolution
 	 * 
 	 * @param resolution
 	 * @return distance => number of peers
@@ -1543,20 +1541,19 @@ public class DictGraph {
 	 * // JUST A TEST WHERE ONLY ONE PEER IS A WRITER for (int i = 0; i <
 	 * CDynamicNetwork.networks.get(0).size(); ++i) { Node node =
 	 * CDynamicNetwork.networks.get(0).get(i); Slicer slicer = (Slicer)
-	 * node.getProtocol(Slicer.pid); RankDescriptor descriptor =
-	 * (RankDescriptor) slicer.descriptor; descriptor.rank = 1; }
+	 * node.getProtocol(Slicer.pid); RankDescriptor descriptor = (RankDescriptor)
+	 * slicer.descriptor; descriptor.rank = 1; }
 	 * 
-	 * Integer times = 0; Integer sum = 0; for (int i = 0; i < N; ++i) { // set
-	 * only one writer (rank = 0) Node node = CDynamicNetwork.networks.get(0)
-	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
-	 * Slicer slicer = (Slicer) node.getProtocol(Spray.pid); RankDescriptor
-	 * descriptor = (RankDescriptor) slicer.descriptor; descriptor.rank = 0;
+	 * Integer times = 0; Integer sum = 0; for (int i = 0; i < N; ++i) { // set only
+	 * one writer (rank = 0) Node node = CDynamicNetwork.networks.get(0)
+	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size())); Slicer
+	 * slicer = (Slicer) node.getProtocol(Spray.pid); RankDescriptor descriptor =
+	 * (RankDescriptor) slicer.descriptor; descriptor.rank = 0;
 	 * 
 	 * Integer hop = 0; Node current = CDynamicNetwork.networks.get(0)
-	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
-	 * Slicer currentSlicer = (Slicer) current.getProtocol(Slicer.pid);
-	 * RankDescriptor currentDescriptor = (RankDescriptor)
-	 * currentSlicer.descriptor;
+	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size())); Slicer
+	 * currentSlicer = (Slicer) current.getProtocol(Slicer.pid); RankDescriptor
+	 * currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
 	 * 
 	 * while (!currentDescriptor.rank.equals(0) && hop < N * 10) { // get a peer
 	 * from the random peer sampling protocol Node next =
@@ -1580,37 +1577,29 @@ public class DictGraph {
 	 *            The number of tries
 	 * @return
 	 */
-	/*public Double findWriter(Integer N) {
-		Integer times = 0;
-		Integer sum = 0;
-		for (int i = 0; i < N; ++i) {
-
-			Integer hop = 0;
-			Node current = CDynamicNetwork.networks.get(0)
-					.get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
-			Slicer currentSlicer = (Slicer) current.getProtocol(Slicer.pid);
-			RankDescriptor currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
-			while (!currentDescriptor.rank.equals(0) && hop < N * 10) {
-				Node next = currentSlicer.getPeers(1).get(0);
-				currentSlicer = (Slicer) next.getProtocol(Slicer.pid);
-				currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
-				++hop;
-			}
-
-			if (hop < N * 10) {
-				sum += hop;
-				++times;
-			}
-		}
-
-		return (sum / (double) times);
-	}*/
+	/*
+	 * public Double findWriter(Integer N) { Integer times = 0; Integer sum = 0; for
+	 * (int i = 0; i < N; ++i) {
+	 * 
+	 * Integer hop = 0; Node current = CDynamicNetwork.networks.get(0)
+	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size())); Slicer
+	 * currentSlicer = (Slicer) current.getProtocol(Slicer.pid); RankDescriptor
+	 * currentDescriptor = (RankDescriptor) currentSlicer.descriptor; while
+	 * (!currentDescriptor.rank.equals(0) && hop < N * 10) { Node next =
+	 * currentSlicer.getPeers(1).get(0); currentSlicer = (Slicer)
+	 * next.getProtocol(Slicer.pid); currentDescriptor = (RankDescriptor)
+	 * currentSlicer.descriptor; ++hop; }
+	 * 
+	 * if (hop < N * 10) { sum += hop; ++times; } }
+	 * 
+	 * return (sum / (double) times); }
+	 */
 
 	/**
 	 * Process how far from the perfect slices the current overlay network is
 	 * 
-	 * @return Stats containing, among others, the avg distance, 0 being the
-	 *         perfect match
+	 * @return Stats containing, among others, the avg distance, 0 being the perfect
+	 *         match
 	 */
 	public Stats distanceFromPerfectSlices() {
 		// #1 process the perfect slice
@@ -1657,8 +1646,8 @@ public class DictGraph {
 	}
 
 	/**
-	 * Nodes have a tree as unique identifier, we measure the maximal depth of
-	 * the tree.
+	 * Nodes have a tree as unique identifier, we measure the maximal depth of the
+	 * tree.
 	 * 
 	 * @return A set of stats on the maximal depth of the identifiers.
 	 */
@@ -1687,8 +1676,8 @@ public class DictGraph {
 	}
 
 	/**
-	 * Unique identifier, tree, etc. We measure the number of branches of peers
-	 * and make stats on it.
+	 * Unique identifier, tree, etc. We measure the number of branches of peers and
+	 * make stats on it.
 	 * 
 	 * @return
 	 */
@@ -1702,4 +1691,17 @@ public class DictGraph {
 		return Stats.getFromSmall(nbBranches);
 
 	}
+
+	public Stats numberOfUnSafe(int pid ) {
+		ArrayList<Double> nbUnSafes = new ArrayList<Double>();
+		for (Node n : CDynamicNetwork.networks.get(0)) {
+			FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) n.getProtocol(pid);
+			// FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) n.getProtocol(FloodingCausalBroadcast.pid);
+
+			nbUnSafes.add((double) fcb.buffers.size());
+		}
+
+		return Stats.getFromSmall(nbUnSafes);
+	}
+
 }

@@ -2,13 +2,13 @@
 SIZE 1000
 
 # parameters of periodic execution
-CYCLES 1000
-CYCLE 1000
+CYCLES 30
+CYCLE 60000
 
 MIN_DELAY 0
 MAX_DELAY 0
 
-SHUFFLE_PERIOD 30*CYCLE
+SHUFFLE_PERIOD CYCLE
 NB_MESSAGES_PER_SEC 0
 P_MESSAGE NB_MESSAGES_PER_SEC/CYCLE/SIZE
 
@@ -25,9 +25,7 @@ protocol.urt.maxdelay MAX_DELAY
 protocol.rps descent.bidirectionnal.BiSpray
 protocol.rps.pid rps
 protocol.rps.listener cb
-protocol.rps.delta 1
 protocol.rps.step SHUFFLE_PERIOD
-protocol.rps.start 1
 
 protocol.cb descent.broadcast.causal.flood.FloodingCausalBroadcast
 protocol.cb.pid cb
@@ -35,7 +33,7 @@ protocol.cb.linkable rps
 protocol.cb.delta 1
 protocol.cb.transport urt
 protocol.cb.step 1
-protocol.cb.start 1
+protocol.cb.from 10*CYCLE
 
 ################### dynamicity #######################
 init.sch CDScheduler
@@ -45,10 +43,13 @@ init.sch.randstart
 control.o1 descent.controllers.CDynamicNetwork
 control.o1.protocols rps
 control.o1.FINAL
-control.o1.step 100
+control.o1.step 1000
 control.o1.addingPerStep 250
 control.o1.startAdd 0
-control.o1.endAdd 30
+control.o1.endAdd 30*1000
+
+init.sch2 CDScheduler
+init.sch2.protocol cb
 
 ################### observers #######################
 control.0 descent.observers.structure.Observer
@@ -56,4 +57,10 @@ control.0.program descent.observers.properties.PVarianceAndArcCount
 control.0.protocol rps
 control.0.FINAL
 control.0.step CYCLE
+
+control.1 descent.observers.structure.Observer
+control.1.program descent.observers.PBuffers
+control.1.protocol cb
+control.1.FINAL
+control.1.step CYCLE/60
 

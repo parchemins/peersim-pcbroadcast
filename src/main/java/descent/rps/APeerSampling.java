@@ -6,20 +6,15 @@ import java.util.List;
 
 import peersim.cdsim.CDProtocol;
 import peersim.config.Configuration;
-import peersim.core.CommonState;
 import peersim.core.Linkable;
 import peersim.core.Node;
 
 public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, IPeerSampling {
 
 	// #A the names of the parameters in the configuration file of peersim
-	private static final String PAR_DELTA = "delta"; // frequency of cyclic call
-	private static final String PAR_START = "start"; // start the cyclic call
 	private static final String PAR_FAIL = "fail"; // proba of fail of each peer
 
 	// #B the values from the configuration file of peersim
-	private static int delta;
-	private static int start;
 	protected static double fail;
 
 	// #C local variables
@@ -33,8 +28,6 @@ public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, I
 	 *            configuration of peersim
 	 */
 	public APeerSampling(String prefix) {
-		APeerSampling.delta = Configuration.getInt(prefix + "." + APeerSampling.PAR_DELTA);
-		APeerSampling.start = Configuration.getInt(prefix + "." + APeerSampling.PAR_START);
 		APeerSampling.fail = Configuration.getDouble(prefix + "." + APeerSampling.PAR_FAIL, 0.0);
 	}
 
@@ -69,8 +62,7 @@ public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, I
 			this.node = node;
 		}
 		// #2 call the periodic function of the node every Delta time
-		if (isUp() && CommonState.getTime() >= APeerSampling.start
-				&& CommonState.getTime() % APeerSampling.delta == 0) {
+		if (isUp()) {
 			this.periodicCall();
 		}
 	}
