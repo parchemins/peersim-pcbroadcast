@@ -1,11 +1,9 @@
 package descent.broadcast.causal.timestamp;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 
 import descent.broadcast.reliable.MReliableBroadcast;
 import descent.broadcast.reliable.ReliableBroadcast;
-import descent.broadcast.reliable.VVwE;
 import descent.rps.IMessage;
 
 /**
@@ -45,13 +43,13 @@ public class TimestampCausalBroadcast extends ReliableBroadcast {
 	}
 
 	@Override
-	public void rDeliver(IMessage m) {
-		if (m instanceof MTimestamp) {
-			this.buffer.add((MTimestamp) m);
+	public void rDeliver(MReliableBroadcast m) {
+		if (m.getPayload() instanceof MTimestamp) {
+			this.buffer.add((MTimestamp) m.getPayload());
 			this.checkBuffer();
 		}
 	}
-	
+
 	public void cDeliver(IMessage m) {
 		// nothing yet
 	}

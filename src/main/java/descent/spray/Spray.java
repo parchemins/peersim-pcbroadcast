@@ -58,10 +58,11 @@ public class Spray extends APeerSampling {
 	}
 
 	public void periodicCall() {
-		this._periodicCall();
+		Node q = this.getOldest();
+		this._periodicCall(q);
 	}
 
-	public Node _periodicCall() {
+	public Node _periodicCall(Node q) {
 		// #0 stop if the peer is down
 		if (!this.isUp || this.partialView.size() <= 0) {
 			return null;
@@ -69,7 +70,7 @@ public class Spray extends APeerSampling {
 
 		// #1 Choose the peer to exchange with
 		this.partialView.incrementAge();
-		Node q = this.partialView.getOldest();
+		//Node q = this.getOldest();
 		Spray qSpray = (Spray) q.getProtocol(Spray.pid);
 		// #A Peer is down: departed or left
 		if (!qSpray.isUp) {
@@ -84,7 +85,7 @@ public class Spray extends APeerSampling {
 		}
 
 		// #2 Create a sample
-		List<Node> sample = this.partialView.getSample(this.node, q, true);
+		List<Node> sample = this.getSample(this.node, q, true);
 		IMessage received = qSpray.onPeriodicCall(this.node, new SprayMessage(sample));
 
 		// #3 Merge the received sample with current partial view
@@ -96,7 +97,7 @@ public class Spray extends APeerSampling {
 
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
 		// #0 Process the sample to send back
-		List<Node> samplePrime = this.partialView.getSample(this.node, origin, false);
+		List<Node> samplePrime = this.getSample(this.node, origin, false);
 		// #1 Merge the received sample with our own partial view and exclude
 		this.mergeSample(this.node, origin, (List<Node>) message.getPayload(), samplePrime, false);
 		// #2 Prepare the result to send back
@@ -132,7 +133,7 @@ public class Spray extends APeerSampling {
 			// #A If the contact peer has neighbors
 			for (Node neighbor : aliveNeighbors) {
 				Spray neighborSpray = (Spray) neighbor.getProtocol(Spray.pid);
-				neighborSpray.inject(1., 0., origin);
+				neighborSpray.addNeighbor(origin);
 			}
 		} else {
 			// #B Otherwise it keeps this neighbor: 2-peers network
@@ -252,6 +253,14 @@ public class Spray extends APeerSampling {
 
 	public Iterable<Node> getPeers() {
 		return this.partialView.getPeers();
+	}
+
+	public Node getOldest() {
+		return this.partialView.getOldest();
+	}
+
+	public List<Node> getSample(Node caller, Node neighbor, boolean isInitiator) {
+		return this.partialView.getSample(caller, neighbor, isInitiator);
 	}
 
 	public void mergeSample(Node caller, Node neighbor, List<Node> newSample, List<Node> oldSample,

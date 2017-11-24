@@ -5,8 +5,8 @@ SIZE 1000
 CYCLES 30
 CYCLE 60000
 
-MIN_DELAY 1000
-MAX_DELAY 1000
+MIN_DELAY 1
+MAX_DELAY 1
 
 SHUFFLE_PERIOD CYCLE
 NB_MESSAGES_PER_SEC 0
@@ -64,4 +64,5 @@ control.1.protocol rps
 control.1.meow cb
 control.1.FINAL
 control.1.step CYCLE/60
+
 

@@ -1,6 +1,5 @@
 package descent.rps;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +10,7 @@ import peersim.core.Node;
 
 public abstract class AAgingPartialView extends PartialView implements IAgingPartialView {
 
-	protected Map<Node, Integer> ages;
+	public Map<Node, Integer> ages;
 
 	public AAgingPartialView() {
 		super();

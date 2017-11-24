@@ -221,17 +221,9 @@ public class FloodingCausalBroadcast implements EDProtocol, CDProtocol {
 	 */
 	private void _sendLocked(Node to, Node mediator) {
 		MLockedBroadcast mlb = new MLockedBroadcast(this.node, to);
-		if (mediator != null) {
-			Transport t = ((Transport) this.node.getProtocol(FastConfig.getTransport(FloodingCausalBroadcast.pid)));
-			t.send(this.node, mediator, new MForward(to, mlb), FloodingCausalBroadcast.pid);
-		}
 
-		/*
-		 * else { Transport t = ((Transport)
-		 * this.node.getProtocol(FastConfig.getTransport(FloodingCausalBroadcast.pid)));
-		 * t.send(this.node, to, mlb, FloodingCausalBroadcast.pid); // (XXX) just a test
-		 * // this._sendToAllNeighborsButNotBroadcast(new MForward(to, mlb)); }
-		 */
+		Transport t = ((Transport) this.node.getProtocol(FastConfig.getTransport(FloodingCausalBroadcast.pid)));
+		t.send(this.node, mediator, new MForward(to, mlb), FloodingCausalBroadcast.pid);
 	}
 
 	/**
@@ -243,8 +235,6 @@ public class FloodingCausalBroadcast implements EDProtocol, CDProtocol {
 	 *            The message to forward.
 	 */
 	private void onForward(Node to, IMessage message) {
-		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(FloodingCausalBroadcast.pid));
-
 		((Transport) this.node.getProtocol(FastConfig.getTransport(FloodingCausalBroadcast.pid))).send(this.node, to,
 				message, FloodingCausalBroadcast.pid);
 	}
