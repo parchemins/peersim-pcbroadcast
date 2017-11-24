@@ -24,6 +24,8 @@ public class BiSpray extends Spray {
 	private static final String PAR_LISTENER = "listener";
 	private static int listener;
 
+	private Node counterpart;
+
 	public BiSpray(String prefix) {
 		super(prefix);
 
@@ -45,7 +47,8 @@ public class BiSpray extends Spray {
 		before.addAll(inview.uniqueSet());
 		before.addAll(outview.uniqueSet());
 
-		super.periodicCall();
+		Node q = super._periodicCall();
+		this.counterpart = q;
 
 		HashSet<Node> after = new HashSet<Node>();
 		after.addAll(inview.uniqueSet());
@@ -66,6 +69,8 @@ public class BiSpray extends Spray {
 
 	@Override
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
+		this.counterpart = origin;
+
 		HashSet<Node> before = new HashSet<Node>();
 		before.addAll(inview.uniqueSet());
 		before.addAll(outview.uniqueSet());
@@ -93,7 +98,8 @@ public class BiSpray extends Spray {
 
 	public void opened(Node n) {
 		if (BiSpray.listener != -1) {
-			((EDProtocol) this.node.getProtocol(BiSpray.listener)).processEvent(this.node, BiSpray.pid, new MOpen(n));
+			((EDProtocol) this.node.getProtocol(BiSpray.listener)).processEvent(this.node, BiSpray.pid,
+					new MOpen(n, this.counterpart));
 		}
 	}
 
@@ -107,7 +113,13 @@ public class BiSpray extends Spray {
 	public boolean addNeighbor(Node peer) {
 		this.outview.add(peer);
 		BiSpray bs = (BiSpray) peer.getProtocol(BiSpray.pid);
+
+		boolean isNewNeighbor = !(bs.outview.contains(peer)) && !(bs.inview.contains(peer));
 		bs.inview.add(this.node);
+		if (isNewNeighbor) {
+			bs.opened(this.node);
+		}
+
 		return super.addNeighbor(peer);
 	}
 
@@ -115,7 +127,13 @@ public class BiSpray extends Spray {
 	public boolean removeNeighbor(Node peer) {
 		this.outview.remove(peer, 1);
 		BiSpray bs = (BiSpray) peer.getProtocol(BiSpray.pid);
+
 		bs.inview.remove(this.node, 1);
+		boolean isRemovedNeighbor = !(bs.outview.contains(peer)) && !(bs.inview.contains(peer));
+		if (isRemovedNeighbor) {
+			bs.closed(this.node);
+		}
+
 		return super.removeNeighbor(peer);
 	}
 
@@ -126,8 +144,6 @@ public class BiSpray extends Spray {
 
 	@Override
 	public Iterable<Node> getAliveNeighbors() {
-		// System.out.println("inview " + this.inview.uniqueSet().size());
-		// System.out.println("outview " + this.outview.uniqueSet().size());
 		ArrayList<Node> neighbors = new ArrayList<Node>();
 		HashSet<Node> view = new HashSet<Node>(this.outview.uniqueSet());
 		view.addAll(this.inview.uniqueSet());

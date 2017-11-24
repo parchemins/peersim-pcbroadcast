@@ -9,7 +9,7 @@ import org.apache.commons.collections4.IteratorUtils;
 import descent.bidirectionnal.MClose;
 import descent.bidirectionnal.MOpen;
 import descent.broadcast.reliable.MReliableBroadcast;
-import descent.broadcast.reliable.ReliableBroadcast;
+import descent.broadcast.reliable.VVwE;
 import descent.rps.APeerSampling;
 import descent.rps.IMessage;
 import peersim.cdsim.CDProtocol;
@@ -26,26 +26,37 @@ import peersim.transport.Transport;
  * dynamicity.
  * 
  */
-public class FloodingCausalBroadcast extends ReliableBroadcast implements EDProtocol, CDProtocol {
+public class FloodingCausalBroadcast implements EDProtocol, CDProtocol {
+
+	// #1 reliability structure
+	private final static String PAR_PID = "pid";
+	public static Integer pid;
+
+	public VVwE received;
+
+	private Integer counter = 0;
+	protected Node node;
 
 	private static final String PAR_PMESSAGE = "pmessage";
 	private static Double pmessage;
 
+	// #2 causality structure
 	public HashMap<Node, ArrayList<MReliableBroadcast>> buffers;
 
+	// #3 failure and bound
 	// (TODO) retries number and counters as id
 
 	public FloodingCausalBroadcast(String prefix) {
-		super(prefix);
-
+		FloodingCausalBroadcast.pid = Configuration.getPid(prefix + "." + FloodingCausalBroadcast.PAR_PID);
 		FloodingCausalBroadcast.pmessage = Configuration.getDouble(prefix + "." + FloodingCausalBroadcast.PAR_PMESSAGE,
 				0.);
 
+		this.received = new VVwE();
 		this.buffers = new HashMap<Node, ArrayList<MReliableBroadcast>>();
 	}
 
 	public FloodingCausalBroadcast() {
-		super();
+		this.received = new VVwE();
 		this.buffers = new HashMap<Node, ArrayList<MReliableBroadcast>>();
 	}
 
@@ -57,20 +68,36 @@ public class FloodingCausalBroadcast extends ReliableBroadcast implements EDProt
 	 *            The message to broadcast.
 	 */
 	public void cbroadcast(IMessage message) {
-		MReliableBroadcast mrb = this.rBroadcast(new MRegularBroadcast(message));
-		for (Node neighbor : this.buffers.keySet()) {
-			this.buffers.get(neighbor).add(mrb);
-		}
+		++this.counter;
+		MReliableBroadcast mrb = new MReliableBroadcast(this.node.getID(), this.counter,
+				new MRegularBroadcast(message));
+		this.received.add(mrb.id, mrb.counter);
+		this._sendToAllNeighbors(mrb);
+		this.rDeliver(mrb);
 	}
 
-	@Override
+	/**
+	 * Deliver exactly once. In this class, messages arrive causally ready, no need
+	 * to check.
+	 * 
+	 * @param m
+	 *            The message delivered.
+	 */
 	public void rDeliver(MReliableBroadcast m) {
+		// #1 buffers
 		for (Node neigbhor : this.buffers.keySet()) {
 			this.buffers.get(neigbhor).add(m);
 		}
-		super.rDeliver(m);
+		// #2 deliver
+		this.cDeliver((MRegularBroadcast) m.getPayload());
 	}
 
+	/**
+	 * Deliver the message. It follows causal order.
+	 * 
+	 * @param m
+	 *            The message delivered.
+	 */
 	public void cDeliver(MRegularBroadcast m) {
 		// nothing
 	}
@@ -82,12 +109,12 @@ public class FloodingCausalBroadcast extends ReliableBroadcast implements EDProt
 	 * @param n
 	 *            The new neighbor.
 	 */
-	public void opened(Node n) {
-		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(ReliableBroadcast.pid));
-		List<Node> neighborhood = IteratorUtils.toList(ps.getPeers().iterator());
+	public void opened(Node n, Node mediator) {
+		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(FloodingCausalBroadcast.pid));
+		List<Node> neighborhood = IteratorUtils.toList(ps.getAliveNeighbors().iterator());
 		if (neighborhood.size() - this.buffers.size() >= 1) {
 			this.buffers.put(n, new ArrayList<MReliableBroadcast>());
-			this._sendLocked(n);
+			this._sendLocked(n, mediator);
 		}
 	}
 
@@ -103,15 +130,16 @@ public class FloodingCausalBroadcast extends ReliableBroadcast implements EDProt
 		MUnlockBroadcast mu = new MUnlockBroadcast(from, to);
 		Transport t = ((Transport) this.node.getProtocol(FastConfig.getTransport(FloodingCausalBroadcast.pid)));
 
-		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(ReliableBroadcast.pid));
-		List<Node> neighborhood = IteratorUtils.toList(ps.getPeers().iterator());
-		// #1 if the origin of the locked message is in our direct neighborhood
+		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(FloodingCausalBroadcast.pid));
+		List<Node> neighborhood = IteratorUtils.toList(ps.getAliveNeighbors().iterator());
+
 		if (neighborhood.contains(from)) {
 			t.send(this.node, from, mu, FloodingCausalBroadcast.pid);
-		} else { // #2 otherwise use forwarding
-			// (TODO) add the route in the locked message to send back ack
-			for (Node n : neighborhood) {
-				t.send(this.node, n, new MForward(n, mu), FloodingCausalBroadcast.pid);
+		} else {
+			// just to check if it cannot send message because it has no
+			FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) from.getProtocol(FloodingCausalBroadcast.pid);
+			if (fcb.buffers.containsKey(to)) {
+				System.out.println("NOT COOL");
 			}
 		}
 	}
@@ -121,7 +149,7 @@ public class FloodingCausalBroadcast extends ReliableBroadcast implements EDProt
 	 * etc.
 	 * 
 	 * @param from
-	 *            We are the origin
+	 *            We are the origin.
 	 * @param to
 	 *            The node that acknowledged our locked message.
 	 */
@@ -148,13 +176,19 @@ public class FloodingCausalBroadcast extends ReliableBroadcast implements EDProt
 		this.buffers.remove(n);
 	}
 
-	@Override
 	public void processEvent(Node node, int protocolId, Object message) {
-		super.processEvent(node, protocolId, message);
+		this._setNode(node);
 
-		if (message instanceof MOpen) {
+		if (message instanceof MRegularBroadcast) {
+			MReliableBroadcast mrb = (MReliableBroadcast) message;
+			if (!this.received.contains(mrb.id, mrb.counter)) {
+				this.received.add(mrb.id, mrb.counter);
+				this._sendToAllNeighbors(mrb); // forward
+				this.rDeliver(mrb);
+			}
+		} else if (message instanceof MOpen) {
 			MOpen mo = (MOpen) message;
-			this.opened(mo.to);
+			this.opened(mo.to, mo.mediator);
 		} else if (message instanceof MClose) {
 			MClose mc = (MClose) message;
 			this.closed(mc.to);
@@ -170,9 +204,8 @@ public class FloodingCausalBroadcast extends ReliableBroadcast implements EDProt
 		}
 	}
 
-	@Override
 	public void nextCycle(Node node, int protocolId) {
-		super.nextCycle(node, protocolId);
+		this._setNode(node);
 
 		if (CommonState.r.nextDouble() < FloodingCausalBroadcast.pmessage) {
 			// (TODO)
@@ -186,9 +219,19 @@ public class FloodingCausalBroadcast extends ReliableBroadcast implements EDProt
 	 * @param to
 	 *            The peer to reach.
 	 */
-	private void _sendLocked(Node to) {
+	private void _sendLocked(Node to, Node mediator) {
 		MLockedBroadcast mlb = new MLockedBroadcast(this.node, to);
-		this._sendToAllNeighborsButNotBroadcast(new MForward(to, mlb));
+		if (mediator != null) {
+			Transport t = ((Transport) this.node.getProtocol(FastConfig.getTransport(FloodingCausalBroadcast.pid)));
+			t.send(this.node, mediator, new MForward(to, mlb), FloodingCausalBroadcast.pid);
+		}
+
+		/*
+		 * else { Transport t = ((Transport)
+		 * this.node.getProtocol(FastConfig.getTransport(FloodingCausalBroadcast.pid)));
+		 * t.send(this.node, to, mlb, FloodingCausalBroadcast.pid); // (XXX) just a test
+		 * // this._sendToAllNeighborsButNotBroadcast(new MForward(to, mlb)); }
+		 */
 	}
 
 	/**
@@ -200,16 +243,21 @@ public class FloodingCausalBroadcast extends ReliableBroadcast implements EDProt
 	 *            The message to forward.
 	 */
 	private void onForward(Node to, IMessage message) {
-		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(ReliableBroadcast.pid));
-		List<Node> neighborhood = IteratorUtils.toList(ps.getPeers().iterator());
-		if (neighborhood.contains(to)) {
-			((Transport) this.node.getProtocol(FastConfig.getTransport(FloodingCausalBroadcast.pid))).send(this.node,
-					to, message, FloodingCausalBroadcast.pid);
-		}
+		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(FloodingCausalBroadcast.pid));
+
+		((Transport) this.node.getProtocol(FastConfig.getTransport(FloodingCausalBroadcast.pid))).send(this.node, to,
+				message, FloodingCausalBroadcast.pid);
 	}
 
-	protected void _sendToAllNeighborsButNotBroadcast(IMessage m) {
-		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(ReliableBroadcast.pid));
+	/**
+	 * Send the reliable broadcast message to all neighbors, excepts ones still
+	 * buffering phase.
+	 * 
+	 * @param m
+	 *            The message to send.
+	 */
+	protected void _sendToAllNeighbors(MReliableBroadcast m) {
+		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(FloodingCausalBroadcast.pid));
 
 		for (Node q : ps.getAliveNeighbors()) {
 			// (XXX) maybe remove q from peer-sampling, cause it may be
@@ -225,27 +273,20 @@ public class FloodingCausalBroadcast extends ReliableBroadcast implements EDProt
 	}
 
 	/**
-	 * Send the reliable broadcast message to all neighbors, excepts ones still
-	 * buffering phase.
+	 * Lazy loading the node.
 	 * 
-	 * @param m
-	 *            The message to send.
+	 * @param n
+	 *            The node hosting this protocol.
 	 */
-	@Override
-	protected void _sendToAllNeighbors(MReliableBroadcast m) {
-		APeerSampling ps = (APeerSampling) this.node.getProtocol(FastConfig.getLinkable(ReliableBroadcast.pid));
-
-		for (Node q : ps.getAliveNeighbors()) {
-			// (XXX) maybe remove q from peer-sampling, cause it may be
-			// scrambled too quick.
-			// Or maybe put
-			// EDProtocol even for cycles. So all scrambles do not happen at a
-			// same time.
-			if (!this.buffers.containsKey(q)) {
-				((Transport) this.node.getProtocol(FastConfig.getTransport(FloodingCausalBroadcast.pid)))
-						.send(this.node, q, m, FloodingCausalBroadcast.pid);
-			}
+	protected void _setNode(Node n) {
+		if (this.node == null) {
+			this.node = n;
 		}
+	}
+
+	@Override
+	public Object clone() {
+		return new FloodingCausalBroadcast();
 	}
 
 }

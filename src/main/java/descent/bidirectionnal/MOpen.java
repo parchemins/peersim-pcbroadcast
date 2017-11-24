@@ -9,9 +9,11 @@ import peersim.core.Node;
 public class MOpen {
 
 	public final Node to;
+	public final Node mediator;
 
-	public MOpen(Node to) {
+	public MOpen(Node to, Node mediator) {
 		this.to = to;
+		this.mediator = mediator;
 	}
 
 }

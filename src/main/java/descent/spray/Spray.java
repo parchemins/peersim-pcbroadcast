@@ -58,9 +58,13 @@ public class Spray extends APeerSampling {
 	}
 
 	public void periodicCall() {
+		this._periodicCall();
+	}
+
+	public Node _periodicCall() {
 		// #0 stop if the peer is down
 		if (!this.isUp || this.partialView.size() <= 0) {
-			return;
+			return null;
 		}
 
 		// #1 Choose the peer to exchange with
@@ -70,13 +74,13 @@ public class Spray extends APeerSampling {
 		// #A Peer is down: departed or left
 		if (!qSpray.isUp) {
 			this.onPeerDown(q);
-			return;
+			return null;
 		}
 		// #B Arc did not properly established
 		boolean isFailedConnection = this.pFail(null);
 		if (isFailedConnection) {
 			this.onArcDown(q);
-			return;
+			return null;
 		}
 
 		// #2 Create a sample
@@ -87,6 +91,7 @@ public class Spray extends APeerSampling {
 		List<Node> samplePrime = (List<Node>) received.getPayload();
 		this.mergeSample(this.node, q, samplePrime, sample, true);
 
+		return q;
 	}
 
 	public IMessage onPeriodicCall(Node origin, IMessage message) {
@@ -127,7 +132,7 @@ public class Spray extends APeerSampling {
 			// #A If the contact peer has neighbors
 			for (Node neighbor : aliveNeighbors) {
 				Spray neighborSpray = (Spray) neighbor.getProtocol(Spray.pid);
-				neighborSpray.addNeighbor(origin);
+				neighborSpray.inject(1., 0., origin);
 			}
 		} else {
 			// #B Otherwise it keeps this neighbor: 2-peers network
@@ -165,19 +170,19 @@ public class Spray extends APeerSampling {
 	protected void inject(Double A, Double B, Node neighbor) {
 		Double a = A;
 		for (Integer i = 0; i < Math.floor(A); ++i) {
-			this.addNeighbor(neighbor);
+			this.partialView.addNeighbor(neighbor);
 			a -= 1;
 		}
 		if (CommonState.r.nextDouble() < a) {
-			this.addNeighbor(neighbor);
+			this.partialView.addNeighbor(neighbor);
 		}
 		Double b = B;
 		for (Integer i = 0; i < Math.floor(B); ++i) {
-			this.addNeighbor(neighbor);
+			this.partialView.addNeighbor(neighbor);
 			b -= 1;
 		}
 		if (CommonState.r.nextDouble() < b) {
-			this.addNeighbor(neighbor);
+			this.partialView.addNeighbor(neighbor);
 		}
 	}
 
@@ -252,20 +257,22 @@ public class Spray extends APeerSampling {
 	public void mergeSample(Node caller, Node neighbor, List<Node> newSample, List<Node> oldSample,
 			boolean isInitiator) {
 
+		SprayPartialView spv = (SprayPartialView) this.partialView.clone();
+
 		// opposite transformation of the getSample
 		ArrayList<Node> oldSampleInitial = (ArrayList<Node>) SprayPartialView.replace(oldSample, caller, neighbor);
 		for (Node toRemoveNeighbor : oldSampleInitial) {
-			this.removeNeighbor(toRemoveNeighbor);
+			spv.removeNeighbor(toRemoveNeighbor);
 		}
 
 		// #B add the received sample
 		for (Node toAddNeighbor : newSample) {
 			boolean found = false;
 			int i = 0;
-			if (this.partialView.contains(toAddNeighbor)) {
+			if (spv.contains(toAddNeighbor)) {
 				// #1 search for a removed peer that is not duplicate
 				while (!found && oldSampleInitial.size() > i) {
-					if (!this.partialView.contains(oldSampleInitial.get(i))) {
+					if (!spv.contains(oldSampleInitial.get(i))) {
 						found = true;
 					} else {
 						++i;
@@ -273,9 +280,21 @@ public class Spray extends APeerSampling {
 				}
 			}
 			if (!found) {
-				this.addNeighbor(toAddNeighbor);
+				spv.addNeighbor(toAddNeighbor);
 			} else {
-				this.addNeighbor(oldSampleInitial.get(i));
+				spv.addNeighbor(oldSampleInitial.get(i));
+			}
+		}
+
+		for (Node n : spv.getPeers()) {
+			if (!this.partialView.contains(n)) {
+				this.addNeighbor(n);
+			}
+		}
+
+		for (Node n : this.partialView.getPeers()) {
+			if (!spv.contains(n)) {
+				this.removeNeighbor(n);
 			}
 		}
 	}

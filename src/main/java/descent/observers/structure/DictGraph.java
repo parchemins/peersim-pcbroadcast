@@ -14,7 +14,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
 
-import descent.bidirectionnal.BiSpray;
+import org.apache.commons.collections4.IteratorUtils;
+
 import descent.broadcast.causal.flood.FloodingCausalBroadcast;
 import descent.causalbroadcast.itc.ITC4CB;
 import descent.causalbroadcast.itc.ITCCBProtocol;
@@ -23,11 +24,10 @@ import descent.rps.APeerSampling;
 import descent.rps.IPeerSampling;
 import descent.slicer.RankDescriptor;
 import descent.slicer.Slicer;
-import descent.spray.Spray;
 import descent.tman.Descriptor;
 import descent.tman.TMan;
+import peersim.config.FastConfig;
 import peersim.core.CommonState;
-import peersim.core.IdleProtocol;
 import peersim.core.Network;
 import peersim.core.Node;
 
@@ -1692,11 +1692,12 @@ public class DictGraph {
 
 	}
 
-	public Stats numberOfUnSafe(int pid ) {
+	public Stats numberOfUnSafe() {
 		ArrayList<Double> nbUnSafes = new ArrayList<Double>();
 		for (Node n : CDynamicNetwork.networks.get(0)) {
-			FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) n.getProtocol(pid);
-			// FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) n.getProtocol(FloodingCausalBroadcast.pid);
+			FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) n.getProtocol(FloodingCausalBroadcast.pid);
+			// FloodingCausalBroadcast fcb = (FloodingCausalBroadcast)
+			// n.getProtocol(FloodingCausalBroadcast.pid);
 
 			nbUnSafes.add((double) fcb.buffers.size());
 		}
@@ -1704,4 +1705,18 @@ public class DictGraph {
 		return Stats.getFromSmall(nbUnSafes);
 	}
 
+	public Stats numberOfAliveNeighbors () {
+		ArrayList<Double> sizes = new ArrayList<Double>();
+		for (Node n : CDynamicNetwork.networks.get(0)) {
+			APeerSampling ps = (APeerSampling) n.getProtocol(FastConfig.getLinkable(FloodingCausalBroadcast.pid));
+			List<Node> neighborhood = IteratorUtils.toList(ps.getAliveNeighbors().iterator());
+			// FloodingCausalBroadcast fcb = (FloodingCausalBroadcast)
+			// n.getProtocol(FloodingCausalBroadcast.pid);
+
+			sizes.add((double) neighborhood.size());
+		}
+
+		return Stats.getFromSmall(sizes);
+	}
+	
 }

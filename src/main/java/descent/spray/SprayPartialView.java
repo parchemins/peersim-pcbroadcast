@@ -1,7 +1,10 @@
 package descent.spray;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import org.apache.commons.collections4.bag.HashBag;
 
 import descent.rps.AAgingPartialView;
 import peersim.core.CommonState;
@@ -160,4 +163,12 @@ public class SprayPartialView extends AAgingPartialView {
 		return result;
 	}
 
+	@Override
+	public SprayPartialView clone() {
+		SprayPartialView spv = new SprayPartialView();
+		spv.partialView = new HashBag<Node>(this.partialView);
+		spv.ages = new HashMap<Node, Integer>(this.ages);
+		return spv;
+	}
+	
 }

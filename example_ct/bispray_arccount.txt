@@ -5,8 +5,8 @@ SIZE 1000
 CYCLES 30
 CYCLE 60000
 
-MIN_DELAY 0
-MAX_DELAY 0
+MIN_DELAY 1000
+MAX_DELAY 1000
 
 SHUFFLE_PERIOD CYCLE
 NB_MESSAGES_PER_SEC 0
@@ -60,7 +60,8 @@ control.0.step CYCLE
 
 control.1 descent.observers.structure.Observer
 control.1.program descent.observers.PBuffers
-control.1.protocol cb
+control.1.protocol rps
+control.1.meow cb
 control.1.FINAL
 control.1.step CYCLE/60
 
