@@ -5,8 +5,8 @@ SIZE 1000
 CYCLES 30
 CYCLE 60000
 
-MIN_DELAY 1
-MAX_DELAY 1
+MIN_DELAY 1000
+MAX_DELAY 1000
 
 SHUFFLE_PERIOD CYCLE
 NB_MESSAGES_PER_SEC 0
@@ -33,7 +33,7 @@ protocol.cb.linkable rps
 protocol.cb.delta 1
 protocol.cb.transport urt
 protocol.cb.step 1
-protocol.cb.from 10*CYCLE
+protocol.cb.from CYCLES*CYCLE
 
 ################### dynamicity #######################
 init.sch CDScheduler

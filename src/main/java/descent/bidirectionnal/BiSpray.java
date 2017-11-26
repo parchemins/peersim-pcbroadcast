@@ -59,7 +59,7 @@ public class BiSpray extends Spray {
 			// System.out.println("meow");
 			return;
 		}
-		
+
 		super._periodicCall(q);
 
 		HashSet<Node> after = new HashSet<Node>();
@@ -70,7 +70,7 @@ public class BiSpray extends Spray {
 		newNeighbors.removeAll(before);
 		// System.out.println("VVVVVVVVVVVVVVVVVVVVVVVV");
 		for (Node n : newNeighbors) {
-			// System.out.println("V"+ this.counterpart.getID());
+			// System.out.println("V" + this.counterpart.getID());
 			this.opened(n);
 		}
 		// System.out.println("VVVVVVVVVVVVVVVVVVVVVVVV");
@@ -80,6 +80,8 @@ public class BiSpray extends Spray {
 		for (Node n : removedNeighbors) {
 			this.closed(n);
 		}
+
+		this.counterpart = null;
 	}
 
 	@Override
@@ -113,6 +115,8 @@ public class BiSpray extends Spray {
 			this.closed(n);
 		}
 
+		this.counterpart = null;
+
 		return m;
 	}
 
@@ -136,9 +140,14 @@ public class BiSpray extends Spray {
 					}
 				}
 			}
-			// System.out.println(possibleResults.size());
-			Node node = possibleResults.get((int) Math.floor(Math.random() * possibleResults.size()));
-			return node;
+			// System.out.println(this.partialView.ages.size());
+			if (possibleResults.size() > 0) {
+				return possibleResults.get((int) Math.floor(Math.random() * possibleResults.size()));
+			} else {
+				System.out.println("meow ? ");
+				System.out.println("partial view " + this.partialView.size());
+				return null;
+			}
 		} else {
 			return super.getOldest();
 		}
@@ -148,9 +157,19 @@ public class BiSpray extends Spray {
 	public List<Node> getSample(Node caller, Node neighbor, boolean isInitiator) {
 		if (BiSpray.listener != -1) {
 			FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) this.node.getProtocol(FloodingCausalBroadcast.pid);
-
 			ArrayList<Node> sample = new ArrayList<Node>();
 			ArrayList<Node> clone = new ArrayList<Node>();
+			
+			int nbSafe = 0;
+			for (Node n : this.partialView.partialView.uniqueSet()) {
+				if (!fcb.buffers.containsKey(n)) {
+					++nbSafe;
+				}
+			}
+			if (nbSafe <=1) {
+				return sample;
+			}
+
 
 			for (Node n : this.partialView.partialView) {
 				if (!fcb.buffers.containsKey(n)) {
@@ -161,7 +180,7 @@ public class BiSpray extends Spray {
 			}
 
 			// #A if the caller in the initiator, it automatically adds itself
-			int sampleSize = (int) Math.ceil(clone.size() / 2.0);
+			int sampleSize = (int) Math.floor(clone.size() / 2.0);
 			if (isInitiator) { // called from the chosen peer
 				clone.remove(clone.indexOf(neighbor));// replace an occurrence of the chosen neighbor
 				sample.add(caller); // by the initiator identity
@@ -191,10 +210,10 @@ public class BiSpray extends Spray {
 		}
 
 		// System.out.println("mefzepofzeofze + " + this.counterpart.getID());
-		
+
 		if (BiSpray.listener != -1) {
 			// if (this.counterpart == null) {
-			//	System.out.println("meowezgiozebg");
+			// System.out.println("meowezgiozebg");
 			// }
 
 			((EDProtocol) this.node.getProtocol(BiSpray.listener)).processEvent(this.node, BiSpray.pid,
@@ -216,7 +235,14 @@ public class BiSpray extends Spray {
 		boolean isNewNeighbor = !(bs.outview.contains(peer)) && !(bs.inview.contains(peer));
 		bs.inview.add(this.node);
 		if (isNewNeighbor) {
-			bs.opened(this.node);
+			// System.out.println("A");
+			if (this.counterpart != null && bs.node.getID() != this.counterpart.getID()) {
+				bs.counterpart = this.counterpart;
+				bs.opened(this.node);
+				bs.counterpart = null;
+			} else {
+				bs.opened(this.node);
+			}
 		}
 
 		return super.addNeighbor(peer);

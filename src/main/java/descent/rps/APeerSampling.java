@@ -58,9 +58,7 @@ public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, I
 
 	public void nextCycle(Node node, int pid) {
 		// #1 lazy loading of the reference of the node
-		if (this.node == null) {
-			this.node = node;
-		}
+		this._setNode(node);
 		// #2 call the periodic function of the node every Delta time
 		if (isUp()) {
 			this.periodicCall();
@@ -138,4 +136,10 @@ public abstract class APeerSampling implements IDynamic, Linkable, CDProtocol, I
 	public void pack() {
 	}
 
+	protected void _setNode(Node n) {
+		if (this.node == null) {
+			this.node = n;
+		}
+
+	}
 }
