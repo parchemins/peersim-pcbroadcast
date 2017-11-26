@@ -16,6 +16,7 @@ import java.util.function.Function;
 
 import org.apache.commons.collections4.IteratorUtils;
 
+import descent.bidirectionnal.BiSpray;
 import descent.broadcast.causal.flood.FloodingCausalBroadcast;
 import descent.causalbroadcast.itc.ITC4CB;
 import descent.causalbroadcast.itc.ITCCBProtocol;
@@ -1705,7 +1706,7 @@ public class DictGraph {
 		return Stats.getFromSmall(nbUnSafes);
 	}
 
-	public Stats numberOfAliveNeighbors () {
+	public Stats numberOfAliveNeighbors() {
 		ArrayList<Double> sizes = new ArrayList<Double>();
 		for (Node n : CDynamicNetwork.networks.get(0)) {
 			APeerSampling ps = (APeerSampling) n.getProtocol(FastConfig.getLinkable(FloodingCausalBroadcast.pid));
@@ -1718,5 +1719,101 @@ public class DictGraph {
 
 		return Stats.getFromSmall(sizes);
 	}
+
+	/**
+	 * @param src
+	 * @return
+	 */
+	public Map<Node, Integer> dijkstraWithBuffersAndFlooding(Node src, boolean withFlooding) {
+		Map<Node, Integer> dist = new HashMap<Node, Integer>();
+		List<Node> Q = new LinkedList<Node>();
+
+		final Node source = src;
+
+		dist.put(source, 0);
+
+		for (Node n : CDynamicNetwork.networks.get(0)) {
+			if (n.getID() != source.getID()) {
+				dist.put(n, Integer.MAX_VALUE);
+			}
+			Q.add(n);
+		}
+
+		while (Q.size() > 0) {
+			Integer min = Integer.MAX_VALUE;
+			Node minNode = null;
+			for (Node n : Q) {
+				if (min > dist.get(n)) {
+					min = dist.get(n);
+					minNode = n;
+				}
+			}
+
+			if (min == Integer.MAX_VALUE) {
+				// System.out.println("partitions in graphs");
+				break;
+			}
+
+			/*
+			 * System.out.println(Q.size()); System.out.println(minNode);
+			 * System.out.println(dist.get(minNode) + 1);
+			 */
+			Q.remove(minNode);
+			BiSpray bs = (BiSpray) minNode.getProtocol(BiSpray.pid);
+			FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) minNode.getProtocol(FloodingCausalBroadcast.pid);
+
+			List<Node> neighbors = IteratorUtils.toList(bs.getAliveNeighbors().iterator());
+			for (Node n : neighbors) {
+				if (!withFlooding || (withFlooding && !fcb.buffers.containsKey(n))) {
+					if (dist.get(minNode) + 1 < dist.get(n)) {
+						dist.put(n, dist.get(minNode) + 1);
+					}
+				}
+			}
+
+		}
+		return dist;
+	}
+
+	public class StatsPair {
 	
+		public final Stats a;
+		public final Stats b;
+		
+		StatsPair(Stats a, Stats b){
+			this.a = a;
+			this.b = b;
+		}
+		
+	}
+	
+	public StatsPair getStatsAboutDistances(Integer n) {
+
+		ArrayList<Double> distancesA = new ArrayList<Double>();
+		ArrayList<Double> distancesB = new ArrayList<Double>();
+		
+		if (CDynamicNetwork.networks.get(0).size() == 0) {
+			return new StatsPair(Stats.getFromSmall(distancesA), Stats.getFromSmall(distancesB));
+		}
+
+		for (int i = 0; i < n; ++i) {
+			Node src = (CDynamicNetwork.networks.get(0))
+					.get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
+			
+			
+			Map<Node, Integer> distA = this.dijkstraWithBuffersAndFlooding(src,false);
+			Map<Node, Integer> distB = this.dijkstraWithBuffersAndFlooding(src,true);
+			
+			
+			for (Node q : distA.keySet()) {
+				distancesA.add((double) distA.get(q));
+			}
+			for (Node q : distB.keySet()) {
+				distancesB.add((double) distB.get(q));
+			}
+		}
+
+		return new StatsPair(Stats.getFromSmall(distancesA), Stats.getFromSmall(distancesB));
+	}
+
 }

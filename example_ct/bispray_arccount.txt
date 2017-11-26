@@ -64,5 +64,6 @@ control.1.protocol rps
 control.1.meow cb
 control.1.FINAL
 control.1.step CYCLE/60
+control.1.from 10*CYCLE
 
 
