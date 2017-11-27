@@ -5,7 +5,6 @@ import java.util.LinkedList;
 
 import descent.rps.APeerSampling;
 import descent.rps.IPeerSampling;
-import descent.spray.Spray;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Control;
