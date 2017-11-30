@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import org.apache.commons.collections4.Bag;
 import org.apache.commons.collections4.bag.HashBag;
 
-import descent.broadcast.causal.flood.FloodingCausalBroadcast;
+import descent.broadcast.causal.preventive.PreventiveCausalBroadcast;
 import descent.rps.IMessage;
 import descent.rps.IPeerSampling;
 import descent.spray.Spray;
@@ -124,7 +124,7 @@ public class BiSpray extends Spray {
 	public Node getOldest() {
 		if (BiSpray.listener != -1) {
 
-			FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) this.node.getProtocol(FloodingCausalBroadcast.pid);
+			PreventiveCausalBroadcast fcb = (PreventiveCausalBroadcast) this.node.getProtocol(PreventiveCausalBroadcast.pid);
 
 			Integer age = 0;
 			ArrayList<Node> possibleResults = new ArrayList<Node>();
@@ -156,7 +156,7 @@ public class BiSpray extends Spray {
 	@Override
 	public List<Node> getSample(Node caller, Node neighbor, boolean isInitiator) {
 		if (BiSpray.listener != -1) {
-			FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) this.node.getProtocol(FloodingCausalBroadcast.pid);
+			PreventiveCausalBroadcast fcb = (PreventiveCausalBroadcast) this.node.getProtocol(PreventiveCausalBroadcast.pid);
 			ArrayList<Node> sample = new ArrayList<Node>();
 			ArrayList<Node> clone = new ArrayList<Node>();
 			

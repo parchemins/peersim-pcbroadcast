@@ -1,6 +1,6 @@
 package descent.transport;
 
-import descent.broadcast.causal.flood.FloodingCausalBroadcast;
+import descent.broadcast.causal.preventive.PreventiveCausalBroadcast;
 import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.core.Node;

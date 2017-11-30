@@ -1,6 +1,6 @@
 package descent.observers;
 
-import descent.broadcast.causal.flood.FloodingCausalBroadcast;
+import descent.broadcast.causal.preventive.PreventiveCausalBroadcast;
 import descent.observers.structure.DictGraph;
 import descent.observers.structure.DictGraph.StatsPair;
 import descent.observers.structure.IObserverProgram;
@@ -15,7 +15,7 @@ public class PBuffers implements IObserverProgram {
 		Stats statsUnsafe = observer.numberOfUnSafe();
 		StatsPair statsDistBiSprayAndFlood = observer.getStatsAboutDistances(20);
 		Transport t = (Transport) CommonState.getNode()
-				.getProtocol(FastConfig.getTransport(FloodingCausalBroadcast.pid));
+				.getProtocol(FastConfig.getTransport(PreventiveCausalBroadcast.pid));
 
 		System.out.println(t.getLatency(null, null) + " ||| " + observer.size() + " " + observer.countArcs() + " "
 				+ observer.numberOfAliveNeighbors().mean + " ||| " + statsUnsafe.mean + " ||| "

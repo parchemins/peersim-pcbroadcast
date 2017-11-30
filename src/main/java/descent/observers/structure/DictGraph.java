@@ -2,8 +2,6 @@ package descent.observers.structure;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -17,19 +15,12 @@ import java.util.function.Function;
 import org.apache.commons.collections4.IteratorUtils;
 
 import descent.bidirectionnal.BiSpray;
-import descent.broadcast.causal.flood.FloodingCausalBroadcast;
-import descent.causalbroadcast.itc.ITC4CB;
-import descent.causalbroadcast.itc.ITCCBProtocol;
+import descent.broadcast.causal.preventive.PreventiveCausalBroadcast;
 import descent.controllers.CDynamicNetwork;
 import descent.rps.APeerSampling;
 import descent.rps.IPeerSampling;
-import descent.slicer.RankDescriptor;
-import descent.slicer.Slicer;
-import descent.tman.Descriptor;
-import descent.tman.TMan;
 import peersim.config.FastConfig;
 import peersim.core.CommonState;
-import peersim.core.Network;
 import peersim.core.Node;
 
 /**
@@ -39,7 +30,8 @@ public class DictGraph {
 
 	/*
 	 * =================================================================== *
-	 * SINGLETON ===================================================================
+	 * SINGLETON
+	 * ===================================================================
 	 */
 
 	private static DictGraph singleton;
@@ -76,7 +68,8 @@ public class DictGraph {
 	}
 
 	/*
-	 * =================================================================== * PUBLIC
+	 * =================================================================== *
+	 * PUBLIC
 	 * ===================================================================
 	 */
 
@@ -675,8 +668,8 @@ public class DictGraph {
 
 	/**
 	 * Count how many partial views in the network have duplicates, triples,
-	 * quadruples etc. The number of duplicates does not matter, if the pv has one,
-	 * that its counted as +1
+	 * quadruples etc. The number of duplicates does not matter, if the pv has
+	 * one, that its counted as +1
 	 *
 	 * @return
 	 */
@@ -1034,136 +1027,9 @@ public class DictGraph {
 		return sb.toString();
 	}
 
-	public String networkxTManDigraph(String graph) {
-
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("import networkx as nx\n");
-
-		sb.append("import matplotlib.pyplot as plt\n");
-		sb.append("from random import random\n");
-		sb.append("colors=[(random(),random(),random()) for _i in range(" + CDynamicNetwork.networks.size() + ")]\n");
-
-		final String progName = "exec" + graph;
-
-		sb.append("def ");
-		sb.append(progName);
-		sb.append("():\n");
-
-		sb.append("\t");
-		sb.append(graph);
-		sb.append(" = nx.DiGraph()\n");
-
-		ArrayList<Integer> distribution = this.distributionInSlices();
-		int[][] numberOfArcs = new int[distribution.size()][distribution.size()];
-		for (int i = 0; i < distribution.size(); ++i) {
-			for (int j = 0; j < distribution.size(); ++j) {
-				numberOfArcs[i][j] = 0;
-			}
-		}
-
-		for (int i = 0; i < Network.size(); ++i) {
-			Slicer slicerFrom = (Slicer) Network.get(i).getProtocol(Slicer.pid);
-			RankDescriptor descriptorFrom = (RankDescriptor) slicerFrom.descriptor;
-
-			for (Node neighbor : slicerFrom.partialView) {
-				Slicer slicerTo = (Slicer) neighbor.getProtocol(Slicer.pid);
-				RankDescriptor descriptorTo = (RankDescriptor) slicerTo.descriptor;
-
-				numberOfArcs[descriptorFrom.rank][descriptorTo.rank] = numberOfArcs[descriptorFrom.rank][descriptorTo.rank]
-						+ 1;
-			}
-		}
-
-		for (int i = 0; i < numberOfArcs.length; ++i) {
-			for (int j = 0; j < numberOfArcs[i].length; ++j) {
-				System.out.print(numberOfArcs[i][j] + " ");
-			}
-			System.out.println();
-		}
-
-		String nodeLabels = "{";
-		String nodeSizes = "[";
-		for (int i = 0; i < distribution.size(); ++i) {
-			sb.append("\t");
-			sb.append(graph);
-			sb.append(".add_node(");
-			sb.append(i);
-			sb.append(")\n");
-
-			nodeLabels += (i + ":" + distribution.get(i));
-			nodeSizes += distribution.get(i);
-			if (i < distribution.size() - 1) {
-				nodeLabels += ",";
-				nodeSizes += ",";
-			}
-		}
-		nodeLabels += "}";
-		nodeSizes += "]";
-
-		String edgeLabels = "{";
-		boolean first = false;
-		for (int i = 0; i < distribution.size(); ++i) {
-			for (int j = 0; j < distribution.size(); ++j) {
-				if (numberOfArcs[i][j] > 0) {
-					sb.append("\t");
-					sb.append(graph);
-					sb.append(".add_edge(");
-					sb.append(i);
-					sb.append(",");
-					sb.append(j);
-					sb.append(")\n");
-
-					if (first) {
-						edgeLabels += ",";
-					}
-					if (!first) {
-						first = true;
-					}
-					edgeLabels += ("(" + i + "," + j + "):" + numberOfArcs[i][j]);
-
-				}
-			}
-		}
-
-		edgeLabels += "}";
-
-		int i = 0;
-		for (LinkedList<Node> nodes : CDynamicNetwork.networks) {
-			if (nodes.size() > 0) {
-				sb.append("\tlistNodes" + i + "= [");
-				for (int j = 0; j < distribution.size(); ++j) {
-					sb.append(j);
-					if (j < distribution.size() - 1) {
-						sb.append(',');
-					}
-				}
-
-				sb.append("]\n");
-			}
-			++i;
-		}
-
-		sb.append("\tpos = nx.circular_layout(" + graph + ")\n");
-		for (i = 0; i < CDynamicNetwork.networks.size(); ++i) {
-			sb.append("\tnx.draw(" + graph + ", pos, edge_color='#A9A9A9', nodelist= listNodes"
-					+ (CDynamicNetwork.networks.size() - i - 1) + ", node_size=40, node_color=colors[" + i
-					+ "], with_labels=True, labels=" + nodeLabels + ", node_sizes=" + nodeSizes + ")\n");
-		}
-
-		sb.append("\tnx.draw_networkx_edge_labels(" + graph + ", pos, edge_labels=" + edgeLabels + ")\n");
-
-		sb.append("\tplt.savefig('" + graph + "',dpi=225)\n");
-		sb.append("\tplt.clf()\n");
-
-		sb.append(progName);
-		sb.append("()\n");
-
-		return sb.toString();
-	}
-
 	/*
-	 * =================================================================== * PRIVATE
+	 * =================================================================== *
+	 * PRIVATE
 	 * ===================================================================
 	 */
 
@@ -1395,141 +1261,6 @@ public class DictGraph {
 	}
 
 	/**
-	 * Get the distribution of distances between neighbors at the given resolution
-	 * 
-	 * @param resolution
-	 * @return distance => number of peers
-	 */
-	public HashMap<Double, Integer> getDistances(Integer resolution) {
-		Double maximal = Descriptor.NUMBER;
-		HashMap<Double, Integer> results = new HashMap<Double, Integer>();
-
-		Double min = Double.POSITIVE_INFINITY;
-		Double max = Double.NEGATIVE_INFINITY;
-
-		ArrayList<Double> distances = new ArrayList<Double>();
-
-		for (int i = 0; i < Network.size(); ++i) {
-			Node n = Network.get(i);
-
-			TMan nTMan = (TMan) n.getProtocol(TMan.pid);
-
-			for (Node neighbor : nTMan.partialView) {
-				TMan neighborTMan = (TMan) neighbor.getProtocol(TMan.pid);
-
-				Double distance = nTMan.descriptor.ranking(neighborTMan.descriptor);
-				if (min > distance) {
-					min = distance;
-				}
-				if (max < distance) {
-					max = distance;
-				}
-				// System.out.println("desc1 " + ((Descriptor)
-				// nTMan.descriptor).x);
-				// System.out.println("d " + distance);
-				distances.add(distance);
-
-			}
-		}
-
-		// Double bucketSize = (1+ max - min) / new Double(resolution);
-		Double bucketSize = maximal / new Double(resolution);
-
-		for (int i = 0; i < resolution; ++i) {
-			// results.put(min + (i + 1) * (bucketSize / 2), 0);
-			results.put(0 + (i + 1) * (bucketSize / 2), 0);
-		}
-
-		for (int i = 0; i < distances.size(); ++i) {
-			Double bucket = Math.floor(distances.get(i) / bucketSize);
-			// System.out.println(bucket);
-			// System.out.println(Integer.MAX_VALUE);
-
-			// System.out.println("bucket " + bucket );
-			// results.put(min + (bucket + 1) * (bucketSize / 2),
-			// results.get(min + (bucket + 1) * (bucketSize / 2)) + 1);
-			results.put(0 + (bucket + 1) * (bucketSize / 2), results.get(0 + (bucket + 1) * (bucketSize / 2)) + 1);
-
-		}
-
-		return results;
-	}
-
-	/**
-	 * Few possible distances
-	 * 
-	 * @return list whose indexes are the distances and values are the number of
-	 *         peers
-	 */
-	public ArrayList<Integer> getDistancesDiscrete() {
-		ArrayList<Integer> result = new ArrayList<Integer>();
-
-		for (int i = 0; i < Network.size(); ++i) {
-			Node n = Network.get(i);
-			TMan nTMan = (TMan) n.getProtocol(TMan.pid);
-
-			for (Node neighbor : nTMan.partialView) {
-				TMan neighborTMan = (TMan) neighbor.getProtocol(TMan.pid);
-				Double distance = nTMan.descriptor.ranking(neighborTMan.descriptor);
-
-				if (!distance.equals(new Double(Integer.MAX_VALUE))) {
-					while (distance >= result.size()) {
-						result.add(0);
-					}
-					result.set(distance.intValue(), result.get(distance.intValue()) + 1);
-				}
-			}
-		}
-
-		return result;
-	}
-
-	/**
-	 * Count the number of "writers". A peer is a writer only if no peers in its
-	 * neighborhoods is a monitor.
-	 */
-	public Integer countWriters() {
-		HashSet<Long> monitors = new HashSet<Long>();
-		for (int i = 0; i < CDynamicNetwork.networks.get(0).size(); ++i) {
-			Node n = CDynamicNetwork.networks.get(0).get(i);
-
-			int j = 0;
-			boolean found = false;
-			while (n.isUp() && j < this.nodes.get(n.getID()).neighbors.size() && !found) {
-				if (monitors.contains(this.nodes.get(n.getID()).neighbors.get(j))) {
-					found = true;
-				}
-				++j;
-			}
-			if (!found) {
-				monitors.add(n.getID());
-			}
-		}
-		return monitors.size();
-	}
-
-	/**
-	 * Count the number of peers in each slice created by the overlay network.
-	 */
-	public ArrayList<Integer> distributionInSlices() {
-		ArrayList<Integer> sums = new ArrayList<Integer>();
-
-		for (int i = 0; i < CDynamicNetwork.networks.get(0).size(); ++i) {
-			Node node = CDynamicNetwork.networks.get(0).get(i);
-			Slicer slicer = (Slicer) node.getProtocol(Slicer.pid);
-			RankDescriptor descriptor = (RankDescriptor) slicer.descriptor;
-			if (descriptor.isSet()) {
-				while (sums.size() <= descriptor.rank) {
-					sums.add(0);
-				}
-				sums.set(descriptor.rank, sums.get(descriptor.rank) + 1);
-			}
-		}
-
-		return sums;
-	}
-
-	/**
 	 * Count the number of hop in average to get to a writer.
 	 * 
 	 * @param N
@@ -1542,19 +1273,20 @@ public class DictGraph {
 	 * // JUST A TEST WHERE ONLY ONE PEER IS A WRITER for (int i = 0; i <
 	 * CDynamicNetwork.networks.get(0).size(); ++i) { Node node =
 	 * CDynamicNetwork.networks.get(0).get(i); Slicer slicer = (Slicer)
-	 * node.getProtocol(Slicer.pid); RankDescriptor descriptor = (RankDescriptor)
-	 * slicer.descriptor; descriptor.rank = 1; }
+	 * node.getProtocol(Slicer.pid); RankDescriptor descriptor =
+	 * (RankDescriptor) slicer.descriptor; descriptor.rank = 1; }
 	 * 
-	 * Integer times = 0; Integer sum = 0; for (int i = 0; i < N; ++i) { // set only
-	 * one writer (rank = 0) Node node = CDynamicNetwork.networks.get(0)
-	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size())); Slicer
-	 * slicer = (Slicer) node.getProtocol(Spray.pid); RankDescriptor descriptor =
-	 * (RankDescriptor) slicer.descriptor; descriptor.rank = 0;
+	 * Integer times = 0; Integer sum = 0; for (int i = 0; i < N; ++i) { // set
+	 * only one writer (rank = 0) Node node = CDynamicNetwork.networks.get(0)
+	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
+	 * Slicer slicer = (Slicer) node.getProtocol(Spray.pid); RankDescriptor
+	 * descriptor = (RankDescriptor) slicer.descriptor; descriptor.rank = 0;
 	 * 
 	 * Integer hop = 0; Node current = CDynamicNetwork.networks.get(0)
-	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size())); Slicer
-	 * currentSlicer = (Slicer) current.getProtocol(Slicer.pid); RankDescriptor
-	 * currentDescriptor = (RankDescriptor) currentSlicer.descriptor;
+	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
+	 * Slicer currentSlicer = (Slicer) current.getProtocol(Slicer.pid);
+	 * RankDescriptor currentDescriptor = (RankDescriptor)
+	 * currentSlicer.descriptor;
 	 * 
 	 * while (!currentDescriptor.rank.equals(0) && hop < N * 10) { // get a peer
 	 * from the random peer sampling protocol Node next =
@@ -1579,124 +1311,27 @@ public class DictGraph {
 	 * @return
 	 */
 	/*
-	 * public Double findWriter(Integer N) { Integer times = 0; Integer sum = 0; for
-	 * (int i = 0; i < N; ++i) {
+	 * public Double findWriter(Integer N) { Integer times = 0; Integer sum = 0;
+	 * for (int i = 0; i < N; ++i) {
 	 * 
 	 * Integer hop = 0; Node current = CDynamicNetwork.networks.get(0)
-	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size())); Slicer
-	 * currentSlicer = (Slicer) current.getProtocol(Slicer.pid); RankDescriptor
-	 * currentDescriptor = (RankDescriptor) currentSlicer.descriptor; while
-	 * (!currentDescriptor.rank.equals(0) && hop < N * 10) { Node next =
-	 * currentSlicer.getPeers(1).get(0); currentSlicer = (Slicer)
-	 * next.getProtocol(Slicer.pid); currentDescriptor = (RankDescriptor)
-	 * currentSlicer.descriptor; ++hop; }
+	 * .get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
+	 * Slicer currentSlicer = (Slicer) current.getProtocol(Slicer.pid);
+	 * RankDescriptor currentDescriptor = (RankDescriptor)
+	 * currentSlicer.descriptor; while (!currentDescriptor.rank.equals(0) && hop
+	 * < N * 10) { Node next = currentSlicer.getPeers(1).get(0); currentSlicer =
+	 * (Slicer) next.getProtocol(Slicer.pid); currentDescriptor =
+	 * (RankDescriptor) currentSlicer.descriptor; ++hop; }
 	 * 
 	 * if (hop < N * 10) { sum += hop; ++times; } }
 	 * 
 	 * return (sum / (double) times); }
 	 */
 
-	/**
-	 * Process how far from the perfect slices the current overlay network is
-	 * 
-	 * @return Stats containing, among others, the avg distance, 0 being the perfect
-	 *         match
-	 */
-	public Stats distanceFromPerfectSlices() {
-		// #1 process the perfect slice
-		ArrayList<Slicer> ordered = new ArrayList<Slicer>();
-
-		Comparator<Slicer> comparator = new Comparator<Slicer>() {
-			public int compare(Slicer o1, Slicer o2) {
-				RankDescriptor r1 = (RankDescriptor) o1.descriptor;
-				RankDescriptor r2 = (RankDescriptor) o2.descriptor;
-				return r2.compareTo(r1);
-			}
-		};
-
-		for (Node node : CDynamicNetwork.networks.get(0)) {
-			Slicer slicerNode = (Slicer) node.getProtocol(Slicer.pid);
-			ordered.add(slicerNode);
-		}
-
-		Collections.sort(ordered, comparator);
-
-		ArrayList<Integer> distribution = this.distributionInSlices();
-
-		// #2 stats on distance
-		Integer number = 0;
-		Integer sumNumberRank = 0;
-		if (!distribution.isEmpty()) {
-			sumNumberRank = distribution.get(0);
-		}
-		Integer theoreticalRank = 0;
-
-		ArrayList<Double> values = new ArrayList<Double>();
-
-		for (Slicer slicerNode : ordered) {
-			Double value = (double) Math.abs(theoreticalRank - ((RankDescriptor) slicerNode.descriptor).rank);
-			values.add(value);
-			++number;
-			if (number >= sumNumberRank && theoreticalRank < distribution.size() - 1) {
-				++theoreticalRank;
-				sumNumberRank += distribution.get(theoreticalRank);
-			}
-		}
-
-		return Stats.getFromSmall(values);
-	}
-
-	/**
-	 * Nodes have a tree as unique identifier, we measure the maximal depth of the
-	 * tree.
-	 * 
-	 * @return A set of stats on the maximal depth of the identifiers.
-	 */
-	public Stats maxDepthOfIdentifiers() {
-		ArrayList<Double> depths = new ArrayList<Double>();
-		for (Node n : CDynamicNetwork.networks.get(0)) {
-			ITCCBProtocol im = (ITCCBProtocol) n.getProtocol(ITCCBProtocol.pid);
-			depths.add(ITC4CB._depth(ITC4CB.getDeepest(im.ct.tracker.getId())).doubleValue());
-		}
-		return Stats.getFromSmall(depths);
-	}
-
-	/**
-	 * Nodes still have a tree as unique identifier, we measure the size of the
-	 * encoded identifiers.
-	 * 
-	 * @return A set of stats about the encoded size of ids
-	 */
-	public Stats sizeOfIdentifier() {
-		ArrayList<Double> sizes = new ArrayList<Double>();
-		for (Node n : CDynamicNetwork.networks.get(0)) {
-			ITCCBProtocol im = (ITCCBProtocol) n.getProtocol(ITCCBProtocol.pid);
-			sizes.add((double) im.ct.tracker.getId().encode(null).getSizeBits());
-		}
-		return Stats.getFromSmall(sizes);
-	}
-
-	/**
-	 * Unique identifier, tree, etc. We measure the number of branches of peers and
-	 * make stats on it.
-	 * 
-	 * @return
-	 */
-	public Stats numberOfBranches() {
-		ArrayList<Double> nbBranches = new ArrayList<Double>();
-		for (Node n : CDynamicNetwork.networks.get(0)) {
-			ITCCBProtocol im = (ITCCBProtocol) n.getProtocol(ITCCBProtocol.pid);
-			nbBranches.add((double) ITC4CB._getNbBranches(im.ct.tracker.getId()));
-			// nbBranches.add((double) im.ct.tracker.getBranches().size());
-		}
-		return Stats.getFromSmall(nbBranches);
-
-	}
-
 	public Stats numberOfUnSafe() {
 		ArrayList<Double> nbUnSafes = new ArrayList<Double>();
 		for (Node n : CDynamicNetwork.networks.get(0)) {
-			FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) n.getProtocol(FloodingCausalBroadcast.pid);
+			PreventiveCausalBroadcast fcb = (PreventiveCausalBroadcast) n.getProtocol(PreventiveCausalBroadcast.pid);
 			// FloodingCausalBroadcast fcb = (FloodingCausalBroadcast)
 			// n.getProtocol(FloodingCausalBroadcast.pid);
 
@@ -1709,7 +1344,7 @@ public class DictGraph {
 	public Stats numberOfAliveNeighbors() {
 		ArrayList<Double> sizes = new ArrayList<Double>();
 		for (Node n : CDynamicNetwork.networks.get(0)) {
-			APeerSampling ps = (APeerSampling) n.getProtocol(FastConfig.getLinkable(FloodingCausalBroadcast.pid));
+			APeerSampling ps = (APeerSampling) n.getProtocol(FastConfig.getLinkable(PreventiveCausalBroadcast.pid));
 			List<Node> neighborhood = IteratorUtils.toList(ps.getAliveNeighbors().iterator());
 			// FloodingCausalBroadcast fcb = (FloodingCausalBroadcast)
 			// n.getProtocol(FloodingCausalBroadcast.pid);
@@ -1760,7 +1395,7 @@ public class DictGraph {
 			 */
 			Q.remove(minNode);
 			BiSpray bs = (BiSpray) minNode.getProtocol(BiSpray.pid);
-			FloodingCausalBroadcast fcb = (FloodingCausalBroadcast) minNode.getProtocol(FloodingCausalBroadcast.pid);
+			PreventiveCausalBroadcast fcb = (PreventiveCausalBroadcast) minNode.getProtocol(PreventiveCausalBroadcast.pid);
 
 			List<Node> neighbors = IteratorUtils.toList(bs.getAliveNeighbors().iterator());
 			for (Node n : neighbors) {
@@ -1776,22 +1411,22 @@ public class DictGraph {
 	}
 
 	public class StatsPair {
-	
+
 		public final Stats a;
 		public final Stats b;
-		
-		StatsPair(Stats a, Stats b){
+
+		StatsPair(Stats a, Stats b) {
 			this.a = a;
 			this.b = b;
 		}
-		
+
 	}
-	
+
 	public StatsPair getStatsAboutDistances(Integer n) {
 
 		ArrayList<Double> distancesA = new ArrayList<Double>();
 		ArrayList<Double> distancesB = new ArrayList<Double>();
-		
+
 		if (CDynamicNetwork.networks.get(0).size() == 0) {
 			return new StatsPair(Stats.getFromSmall(distancesA), Stats.getFromSmall(distancesB));
 		}
@@ -1799,12 +1434,10 @@ public class DictGraph {
 		for (int i = 0; i < n; ++i) {
 			Node src = (CDynamicNetwork.networks.get(0))
 					.get(CommonState.r.nextInt(CDynamicNetwork.networks.get(0).size()));
-			
-			
-			Map<Node, Integer> distA = this.dijkstraWithBuffersAndFlooding(src,false);
-			Map<Node, Integer> distB = this.dijkstraWithBuffersAndFlooding(src,true);
-			
-			
+
+			Map<Node, Integer> distA = this.dijkstraWithBuffersAndFlooding(src, false);
+			Map<Node, Integer> distB = this.dijkstraWithBuffersAndFlooding(src, true);
+
 			for (Node q : distA.keySet()) {
 				distancesA.add((double) distA.get(q));
 			}

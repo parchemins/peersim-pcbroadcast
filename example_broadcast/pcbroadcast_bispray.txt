@@ -1,0 +1,74 @@
+# network size
+SIZE 10000
+
+# parameters of periodic execution
+CYCLES 500
+CYCLE 60000
+
+MIN_DELAY 1000
+MAX_DELAY 1000
+
+SHUFFLE_PERIOD CYCLE
+NB_MESSAGES_PER_SEC 0
+P_MESSAGE NB_MESSAGES_PER_SEC/CYCLE/SIZE
+
+random.seed 1237560
+network.size SIZE
+simulation.endtime CYCLES*CYCLE
+simulation.logtime CYCLE
+
+################### protocols #######################
+# protocol.urt UniformRandomTransport
+# protocol.urt.mindelay MIN_DELAY
+# protocol.urt.maxdelay MAX_DELAY
+protocol.urt descent.transport.IncreasingLatencyTransport
+protocol.urt.min 0
+protocol.urt.inc 10
+protocol.urt.from 25*CYCLE
+protocol.urt.step CYCLE/60
+
+protocol.rps descent.bidirectionnal.BiSpray
+protocol.rps.pid rps
+protocol.rps.listener cb
+protocol.rps.step SHUFFLE_PERIOD
+
+protocol.cb descent.broadcast.causal.preventive.PreventiveCausalBroadcast
+protocol.cb.pid cb
+protocol.cb.linkable rps
+protocol.cb.delta 1
+protocol.cb.transport urt
+protocol.cb.step 1
+protocol.cb.from CYCLES*CYCLE
+
+################### dynamicity #######################
+init.sch CDScheduler
+init.sch.protocol rps
+init.sch.randstart
+
+control.o1 descent.controllers.CDynamicNetwork
+control.o1.protocols rps
+control.o1.FINAL
+control.o1.step 1000
+control.o1.addingPerStep 2500
+control.o1.startAdd 0
+control.o1.endAdd 30*1000
+
+init.sch2 CDScheduler
+init.sch2.protocol cb
+
+################### observers #######################
+control.0 descent.observers.structure.Observer
+control.0.program descent.observers.properties.PVarianceAndArcCount
+control.0.protocol rps
+control.0.FINAL
+control.0.step CYCLE
+
+control.1 descent.observers.structure.Observer
+control.1.program descent.observers.PBuffers
+control.1.protocol rps
+control.1.meow cb
+control.1.FINAL
+control.1.step CYCLE/60
+control.1.from 25*CYCLE
+
+

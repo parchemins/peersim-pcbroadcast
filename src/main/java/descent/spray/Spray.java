@@ -3,7 +3,6 @@ package descent.spray;
 import java.util.ArrayList;
 import java.util.List;
 
-import descent.merging.MergingRegister;
 import descent.rps.APeerSampling;
 import descent.rps.IMessage;
 import descent.rps.IPeerSampling;
@@ -31,12 +30,9 @@ public class Spray extends APeerSampling {
 	// #B Local variables
 	public SprayPartialView partialView;
 
-	public MergingRegister register;
-
 	public Spray(String prefix) {
 		super(prefix);
 		this.partialView = new SprayPartialView();
-		this.register = new MergingRegister();
 
 		Spray.pid = Configuration.getPid(prefix + "." + Spray.PAR_PID);
 		this.A = Configuration.getDouble(prefix + "." + Spray.PAR_A, 1.);
@@ -46,7 +42,6 @@ public class Spray extends APeerSampling {
 	public Spray() {
 		super();
 		this.partialView = new SprayPartialView();
-		this.register = new MergingRegister();
 	}
 
 	@Override
@@ -70,7 +65,7 @@ public class Spray extends APeerSampling {
 
 		// #1 Choose the peer to exchange with
 		this.partialView.incrementAge();
-		//Node q = this.getOldest();
+		// Node q = this.getOldest();
 		Spray qSpray = (Spray) q.getProtocol(Spray.pid);
 		// #A Peer is down: departed or left
 		if (!qSpray.isUp) {
