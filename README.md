@@ -1,34 +1,22 @@
-# SPRAY
+# peersim-pcbroadcast
 
-*Keywords: Large scale distributed applications, random peer sampling, WebRTC*
+_Keywords: causal broadcast, large and dynamic networks_
 
-PeerSim (http://peersim.sourceforge.net/) implementation for
-Spray, an adaptive, probabilistic random peer sampling service [1] based on Scamp [2] and Cyclon [3].
+[PeerSim](http://peersim.sourceforge.net/) [1] implementation for preventive
+causal broadcast. Instead of checking at each receipt if messages are ready to
+be delivered, messages arrive ready by design. Instead of conveying control
+information that increases linearly with the network size, messages convey
+constant size control information. The delivery execution time goes from linear
+to constant too.
+
+Causal broadcast finally becomes an affordable and efficient middleware for
+distributed protocols and applications in large and dynamic systems.
 
 
 ## References
 
+[1] A. Montresor and M. Jelasity. Peersim: A scalable P2P
+simulator. _Proceedings of the 9th International Conference on Peer-to-Peer
+(P2P’09)_, Seattle, WA, Sep. 2009, pp. 99-100.
 
-[1]     Gossip-based Peer Sampling:
-        Mark Jelasity
-        University of Szeged and Hungarian Academy of Sciences, Hungary
-        Spyros Voulgaris
-        ETH Zuerich, Switzerland
-        Rachid Guerraoui
-        EPFL, Lausanne, Switzerland
-        Anne-Marie Kermarrec
-        INRIA, Rennes, France
-        Maarten Van Steen
-        Vrije Universiteit, Amsterdam, The Netherlands
 
-[2]     Peer-to-Peer Membership Management for Gossip-Based Protocols:
-        Ayalvadi J. Ganesh,
-        Anne-Marie Kermarrec,
-        Laurent Massouile,
-        IEEE TRANSACTIONS ON COMPUTERS, VOL. 52, No. 2, FEBRUARY 2003
-
-[3]     Cyclon: Inexpensive Membership Management for Unstructured P2P Overlays:
-        Spyros Voulgaris,
-        Daniela Gavidia,
-        Maartens van Steen,
-        Journal of Network and Systems Management, Vol. 13, No. 2, June 2005
